@@ -148,3 +148,16 @@ Spider对结果的处理，有两个方向，一个时Item Pipeline, 一个是Sc
 一般使用scrapy,只需要修改爬虫器和管道即可。
 
 ### Scrapy使用
+* scrapy安装： pip install scrapy
+* 创建scrapy工程： scrapy startproject spiders  # 创建一个名为spiders的工程
+* 进入工程路径： cd  spiders/spiders
+* 使用genspider来产生一个新的spider: $scrapy genspider example example.com, 此时要为这个spider命名，并且要对应一个域名，也就是要爬取的域名。scrapy会自动生成和改域名相关的设置，不建议随便填写域名。 <br/>
+  比如  scrapy genspider movies douban.com, 此时创建了一个名为movies的爬虫，它是基于basic模板创建的。可以通过import spiders.spiders.movies 来使用爬虫。
+此时在spiders\spiders\spiders下就生成了movies.py的文件。
+
+
+|a|b|c|
+|-|-|-|
+|1|2|3|
+|4|5|6|
+
