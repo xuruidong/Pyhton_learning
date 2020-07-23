@@ -218,12 +218,143 @@ class MoviesSpider(scrapy.Spider):
     def parse(self, response):
         pass
 ```
++ import scrapy 不但引入了scrapy库自身的一系列功能，还引入了item.py, pipelines.py等这些我们自己定义的这些信息。
++ 建议类首字母大写，方法首字母小写（PEP8）
++ name = 'movies',   在运行爬虫时，传入的爬虫名字一定要是'movies'，$scrapy crawl movies
++ allowed_domains， 爬取范围
++ start_urls，爬取入口。 scrapy使用了Twisted异步框架，需要一个启动请求。scrapy 根据start_urls来设置一些http头。
++ parse方法的参数response是 start_urls通过调度器和下载器发起了一次请求之后得到的响应信息
+
+
+### 代码实现
+
+#### 最简单的实现
+修改入口url, 编写parse, 在settings.py中设置（爬豆瓣时必须设置， 打开USER_AGENT即可）
+```
+class MoviesSpider(scrapy.Spider):
+    name = 'movies'
+    allowed_domains = ['douban.com']
+    start_urls = ['https://movie.douban.com/top250']
+
+    def parse(self, response):
+        print ("Hello spider!")
+        # print(response.text)
+        print (dir(response))
+```
+执行 `scrapy crawl movies` 即可。
+可以看到response的属性和方法：
+```
+['_DEFAULT_ENCODING', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__slots__', '__str__', '__subclasshook__', '__weakref__', '_auto_detect_fun', '_body', '_body_declared_encoding', '_body_inferred_encoding', '_cached_benc', '_cached_decoded_json', '_cached_selector', '_cached_ubody', '_declared_encoding', '_encoding', '_get_body', '_get_url', '_headers_encoding', '_set_body', '_set_url', '_url', 'body', 'body_as_unicode', 'cb_kwargs', 'certificate', 'copy', 'css', 'encoding', 'flags', 'follow', 'follow_all', 'headers', 'ip_address', 'json', 'meta', 'replace', 'request', 'selector', 'status', 'text', 'url', 'urljoin', 'xpath']
+```
+
+爬虫默认的行为是请求start_urls， 然后有parse处理响应信息。
+
+#### 翻页爬取电影列表
+爬虫的默认行为不符合要求。需要在parse前完成翻页功能。在scrapy中有start_requests方法，引擎会自动调用该方法，并且只会被调用一次。start_requests的默认实现是读取start_urls，生成Request对象，发送给引擎，引擎再指挥其他组件向网站服务器发起请求。所以这里需要重载start_requests方法。
+```
+def start_requests(self):
+    for page in range(10):
+        url = 'https://movie.douban.com/top250?start=%d&filter=' % (
+            page * 25)
+        yield scrapy.Request(url=url, callback=self.parse)
+```
+Request可以设置响应解析方法。默认是parse。
+这里使用BeautifulSoup来解析网页。
+```
+def parse(self, response):
+    soup = BeautifulSoup(response.text, 'html.parser')
+    title_list = soup.find_all('div', attrs={'class': 'hd'})
+    for title_elem in title_list:
+        title = title_elem.find('a').find('span').text
+        link = title_elem.find('a').get('href')
+        print ("============")
+        print (title)
+        print (link)
+        print ("------------")
+    print ("++++++++++++++")
+```
+
+#### 存储爬取结果
+我们可以在parse方法中实现存储过程，但并不是一个好的方法。为了让存储更加灵活，加入了item组件。通过管道，将结果传递给不同的items，从而存储到不同的介质中。 当我们需要修改存储介质时，就不需要修改parse的实现，这样利用管道就达到了解耦的作用（消息队列也举手了）。
+- 在movies.py中引入DoubanmovieItem
+  `from spiders.items import SpidersItem`
+- 在spiders/spiders/spiders/items.py中修改SpidersItem类
+  比如现在要存储title和link, 就要在SpidersItem中写上响应的item。它们的属性是一个固定值，scrapy.Field()
+  ```
+    class SpidersItem(scrapy.Item):
+        # define the fields for your item here like:
+        # name = scrapy.Field()
+        title = scrapy.Field()
+        link = scrapy.Field()
+  ```
+
+- 在parse方法中，将title和link保存在item对象中，并返回给pipelines
+```
+def parse(self, response):
+    items = []
+    soup = BeautifulSoup(response.text, 'html.parser')
+    title_list = soup.find_all('div', attrs={'class': 'hd'})
+    for title_elem in title_list:
+        item = SpidersItem()
+        title = title_elem.find('a').find('span').text
+        link = title_elem.find('a').get('href')
+        item['title'] = title
+        item['link'] = link
+        items.append(item)
+        
+    return items
+```
+
+- pipeline.py中的SpidersPipeline::process_item方法会处理每一个item
+```
+class SpidersPipeline:
+    def process_item(self, item, spider):
+        #print ("@process_item, title=%s" % item["title"])
+        return item
+```
+  默认行为是直接返回item, 在终端上直接打印item。可以在这里实现item的存储。
+  在此之前，需要在settings.py中的ITEM_PIPELINES中激活组件 
+```
+ITEM_PIPELINES = {
+    'spiders.pipelines.SpidersPipeline': 300,
+}
+```
+
+
+### 其他设置
+user-agent设置
+DOWNLOAD_DELAY = 1 下载时延
+
+### 电影详情页爬取
+scrapy 的spiders得到结果后可以有两条路选择，一个是到达items, 另一个是再次向scheduler发起请求。现在通过top250页面得到了电影的链接，再次对电影链接发起请求就可以得到电影详情。所以要对之前的parse方法进行修改。<br/>
+要继续对链接发起请求，就要在parse中返回Request对象。
+```
+def parse(self, response):
+    items = []
+    soup = BeautifulSoup(response.text, 'html.parser')
+    title_list = soup.find_all('div', attrs={'class': 'hd'})
+    for title_elem in title_list:
+        item = SpidersItem()
+        title = title_elem.find('a').find('span').text
+        link = title_elem.find('a').get('href')
+        item['title'] = title
+        item['link'] = link
+        # items.append(item)
+        yield scrapy.Request(url=link, meta={'item': item}, callback=self.parse2)
+```
+Request对象的url是link, 此外要传入item 给meta,  编写详情页的解析函数self.parse2
+```
+def parse2(self, response):
+        item = response.meta['item']
+        soup = BeautifulSoup(response.text, 'html.parser')
+        content = soup.find(
+            'div', attrs={'class': 'related-info'}).get_text().strip()
+        item["content"] = content
+        yield item
+```
 
 
 
-|a|b|c|
-|-|-|-|
-|1|2|3|
-|4|5|6|
 
-BookCopycats
+
+## XPath
