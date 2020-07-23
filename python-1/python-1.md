@@ -151,9 +151,74 @@ Spider对结果的处理，有两个方向，一个时Item Pipeline, 一个是Sc
 * scrapy安装： pip install scrapy
 * 创建scrapy工程： scrapy startproject spiders  # 创建一个名为spiders的工程
 * 进入工程路径： cd  spiders/spiders
+  文档提示 cd spiders其实是进入spiders/spiders
 * 使用genspider来产生一个新的spider: $scrapy genspider example example.com, 此时要为这个spider命名，并且要对应一个域名，也就是要爬取的域名。scrapy会自动生成和改域名相关的设置，不建议随便填写域名。 <br/>
-  比如  scrapy genspider movies douban.com, 此时创建了一个名为movies的爬虫，它是基于basic模板创建的。可以通过import spiders.spiders.movies 来使用爬虫。
-此时在spiders\spiders\spiders下就生成了movies.py的文件。
+  比如  scrapy genspider movies douban.com, 此时创建了一个名为movies的爬虫，它是基于basic模板创建的。可以通过import spiders.spiders.movies 来使用这个爬虫模块。
+  在执行genspider之前，spiders/spiders/spiders下面只有初始化文件__init__.py，没有真正的spider初始化文件。
+  执行完genspider之后，在spiders\spiders\spiders下就生成了movies.py的文件， 这就是生成的爬虫。
+
+此时的目录结构
+```
+spider1
+├── scrapy.cfg
+└── spider1
+    ├── __init__.py
+    ├── items.py
+    ├── middlewares.py
+    ├── pipelines.py
+    ├── __pycache__
+    │   ├── __init__.cpython-37.pyc
+    │   └── settings.cpython-37.pyc
+    ├── settings.py
+    └── spiders
+        ├── __init__.py
+        ├── movies.py
+        └── __pycache__
+            └── __init__.cpython-37.pyc
+```
+这些文件和scrapy架构中模块的对应关系：
+|Python文件 |    说明    |
+|-----------|-----------|
+|settings.py|项目设置文件|
+|scrapy.cfg |项目配置文件|
+|items.py   |定义所爬取记录的数据结构|
+|movies.py  |编写爬虫逻辑|
+|pipelines.py|设置保持位置|
+
+#### scrapy.cfg
+```
+# Automatically created by: scrapy startproject
+#
+# For more information about the [deploy] section see:
+# https://scrapyd.readthedocs.io/en/latest/deploy.html
+
+[settings]
+default = spider1.settings
+
+[deploy]
+#url = http://localhost:6800/
+project = spider1
+```
+"settings" 它的整个设置文件被写入到spiders1目录下的settings.py文件中。
+
+#### settings.py
+一般情况下可能不需要修改配置。 当出现异常，或需要优化的时候，就需要修改。
+在settings.py中，可以修改USER_AGENT等等。。。
+
+#### movies.py (爬虫文件)
+```
+import scrapy
+
+
+class MoviesSpider(scrapy.Spider):
+    name = 'movies'
+    allowed_domains = ['douban.com']
+    start_urls = ['http://douban.com/']
+
+    def parse(self, response):
+        pass
+```
+
 
 
 |a|b|c|
@@ -161,3 +226,4 @@ Spider对结果的处理，有两个方向，一个时Item Pipeline, 一个是Sc
 |1|2|3|
 |4|5|6|
 
+BookCopycats
