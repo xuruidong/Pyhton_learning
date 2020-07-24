@@ -358,3 +358,6 @@ def parse2(self, response):
 
 
 ## XPath
+scrapy集成了页面解析工具，selector
+
+XPath是一门在XML文档中查找信息的语言。XPath使用路径表达式来选取XML文档中的节点或者节点集。
