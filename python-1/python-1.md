@@ -50,8 +50,11 @@ def __init__(self, markup="", features=None, builder=None,
                  parse_only=None, from_encoding=None, exclude_encodings=None,
                  element_classes=None, **kwargs):
 ```
-主要的解析器有4种， 
+主要的解析器有4种。
 
++ 创建BeautifulSoup对象，将响应文本传参，指定解析器。之后BeautifulSoup对html进行了解析
++ 使用find_all或find方法来查找需要的内容。传如元素名，执行属性等（字典形式）
++ 获取属性使用get('属性名')， 获取文本使用text
 
 ## XPath使用
 ### 浏览器操作
@@ -358,6 +361,169 @@ def parse2(self, response):
 
 
 ## XPath
-scrapy集成了页面解析工具，selector
 
+
+### XPath节点
+在XPath中欧七种类型的节点：元素，属性，文本，命名空间，处理指令，注释，文档节点（或称为根节点）
+```
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<bookstore>
+
+<book>
+  <title lang="en">Harry Potter</title>
+  <author>J K. Rowling</author> 
+  <year>2005</year>
+  <price>29.99</price>
+</book>
+
+</bookstore>
+```
+
+`<bookstore>`文档节点
+`<author>J K. Rowling</author>`元素节点
+`lang="en"` 属性节点
+
+
+
+### XPath路径表达式
 XPath是一门在XML文档中查找信息的语言。XPath使用路径表达式来选取XML文档中的节点或者节点集。
+XPath路径匹配， 以“//”，“/”， “.”, ".."开头，
+表达式|举例|举例说明|
+|-|-|-|
+|nodename|选取此节点的所有子节点|
+|/|'/div'|从根节点开始找，
+|//|'//div@class="hd"'|从上到下找，标签为div,并且包含属性class,class名为hd|
+|.|'./div'|从当前位置开始向下找|
+|..|'../div'|从平级位置开始找|
+
+
+
+[XPath在线测试工具](https://www.toolnb.com/tools/xpath.html)
+```
+<!DOCTYPE html>
+<html itemscope itemtype="http://schema.org/WebPage" class="ua-chrome ">
+  <head>
+      <meta charset="UTF-8">
+      <title>豆瓣(手机版)</title>
+      <meta name="format-detection" content="telephone=no">
+      <meta name="description" content="读书、看电影、涨知识、学穿搭...，加入兴趣小组，获得达人们的高质量生活经验，找到有相同爱好的小伙伴。">
+      <meta name="keywords" content="豆瓣,手机豆瓣,豆瓣手机版,豆瓣电影,豆瓣读书,豆瓣同城">
+      <link rel="canonical" href="
+https://m.douban.com/">
+      <link href="https://img3.doubanio.com/f/talion/20f294507038a0d03718cd15b4defe16ea78d05a/css/card/base.css" rel="stylesheet">
+      
+<script>
+  var saveKey = '_t_splash'
+  var day = 3
+  if (Date.now() - window.localStorage.getItem(saveKey) < 1000 * 60 * 60 * 24 * day) {
+    window.location.replace('/home_guide')
+  } else {
+        window.localStorage.setItem(saveKey, Date.now())
+  }
+</script>
+
+      <link rel="stylesheet" href="https://img3.doubanio.com/misc/mixed_static/4f3062503e5a7c84.css">
+      <link rel="icon" type="image/png" sizes="48x48" href="https://img3.doubanio.com/f/talion/10a4a913a5715f628e4b598f7f9f2c18621bdcb3/pics/icon/dou48.png">
+      <!-- iOS touch icon -->
+      <link rel="apple-touch-icon-precomposed" href="https://img3.doubanio.com/f/talion/997f2018d82979da970030a5eb84c77f0123ae5f/pics/icon/m_logo_76.png">
+      <link rel="apple-touch-icon-precomposed" sizes="200x200" href="https://img3.doubanio.com/f/talion/7c6364aadf368dc0210173c940cfd0f64ceddc66/pics/icon/m_logo_200.png">
+      <!-- For Android -->
+      <link rel="icon" sizes="192x192" href="https://img3.doubanio.com/f/talion/7c6364aadf368dc0210173c940cfd0f64ceddc66/pics/icon/m_logo_200.png">
+      <!-- For Web App Manifest -->
+      <link type="application/opensearchdescription+xml" rel="search" href="/opensearch"/>
+          <!-- hm baidu -->
+          <script type="text/javascript">
+          var _hmt = _hmt || [];
+          </script>
+  </head>
+  <body ontouchstart="">
+    
+    <div class="page">
+        
+  
+  
+  <div class="splash">
+    <div class="splash-content">
+      <div class="splash-pic">
+        <img src="https://img3.doubanio.com/f/talion/706ae8511b66f390ae0427daf85df7ddd93ab1b9/pics/card/splash/splash_bg.jpg" />
+      </div>
+    </div>
+    <div class="splash-bottom">
+      <div class="splash-text">
+        <p class="splash-text-main">来豆瓣，记录你的书影音生活</p>
+        <!-- <p>更多书影音讨论在豆瓣App</p> -->
+      </div>
+      <a class="splash-btn" href="https://m.douban.com/to_app?copy_open=1&url=/recommend_feed&source=splash">下载App</a>
+      <a class="splash-link" id="home_guide" href="/home_guide">进入网页版 &gt;</a>
+    </div>
+  </div>
+
+    </div>
+    <script src="https://img3.doubanio.com/f/talion/ee8e0c54293aefb5709ececbdf082f8091ad5e49/js/card/zepto.min.js"></script>
+    <hahaha> I am in hahaha</hahaha>
+  </body>
+</html>
+```
+|路径表达式|结果|
+|-|-|
+
+
+### 在scrapy中使用选择器
+* scrapy集成了页面解析工具，selector 选择器，使用选择器时需要导入`from scrapy.selector import Selector`
+* 创建Selector对象，需要传入response对象，
+* 使用Selector的xpath方法，传参xpath 字符串，
+* xpath方法返回的是一个`<class 'scrapy.selector.unified.SelectorList'>`, 包含方法
+```
+['__add__', '__class__', '__contains__', '__delattr__', '__delitem__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getslice__', '__getstate__', '__gt__', '__hash__', '__iadd__', '__imul__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__module__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__reversed__', '__rmul__', '__setattr__', '__setitem__', '__sizeof__', '__slots__', '__str__', '__subclasshook__', '__weakref__', 'append', 'attrib', 'clear', 'copy', 'count', 'css', 'extend', 'extract', 'extract_first', 'get', 'getall', 'index', 'insert', 'pop', 're', 're_first', 'remove', 'reverse', 'sort', 'xpath']
+```
+* 遍历xpath返回值，继续查找。 获取文本用text(),获取属性用@
+```
+def parse(self, response):
+        items = []
+        '''
+        soup = BeautifulSoup(response.text, 'html.parser')
+        title_list = soup.find_all('div', attrs={'class': 'hd'})
+        for title_elem in title_list:
+            item = SpidersItem()
+            title = title_elem.find('a').find('span').text
+            link = title_elem.find('a').get('href')
+            item['title'] = title
+            item['link'] = link
+            # items.append(item)
+            yield scrapy.Request(url=link, meta={'item': item}, callback=self.parse2)
+        '''
+        movies = Selector(response=response).xpath('//div[@class="hd"]')
+        # print("=====================")
+        # print(type(movies))
+        #print(dir(movies))
+        # print("++++++++++++++++++++")
+        for movie in movies:
+            item = SpidersItem()
+            link_selector = movie.xpath('./a/@href')
+            title_selector = movie.xpath('./a/span[@class="title"]/text()')
+            link = link_selector.extract_first()
+            title = title_selector.extract_first()
+            print (link)
+            print (title)
+            item['title'] = title
+            item['link'] = link
+            yield scrapy.Request(url=link, meta={'item': item}, callback=self.parse2)
+
+    def parse2(self, response):
+        item = response.meta['item']
+        '''
+        soup = BeautifulSoup(response.text, 'html.parser')
+        content = soup.find(
+            'div', attrs={'class': 'related-info'}).get_text().strip()
+        '''
+        movies = Selector(response=response).xpath(
+            '//span[@property="v:summary"]/text()')
+        #print (movies.extract_first())
+        content = movies.extract_first()
+        item["content"] = content
+        yield item
+```
+
+## yield和推导式
+yield与return的区别
