@@ -64,7 +64,7 @@ def __init__(self, markup="", features=None, builder=None,
 ![浏览器演示1](xpath-1.jpg)
 如果我们使用BeautifulSoup查找，要找到span标签，content。
 我们在代码侧，鼠标右键---复制---复制Xpath。
-使用Xpath也可以匹配到span标签。 win+f打开搜索栏，输入拷贝的XPath，此时对应的标签会高亮显示。（没成功，再试一下）。
+使用Xpath也可以匹配到span标签。 win+f打开搜索栏，输入拷贝的XPath，此时对应的标签会高亮显示。
 
 ### 在python中使用XPath
 首先要导入lxml.etree
@@ -116,9 +116,9 @@ def page_turn():
 ```
 
 ## Python 基础语法
-[Python 数据结构](https://docs.python.org/zh-cn/3/tutorial/datastructures.html)
-[Pyhton 其他流程控制工具](https://docs.python.org/zh-cn/3/tutorial/controlflow.html)
-[Pyhton 中的类](https://docs.python.org/zh-cn/3/tutorial/classes.html)
+[Python 数据结构](https://docs.python.org/zh-cn/3/tutorial/datastructures.html)<br/>
+[Pyhton 其他流程控制工具](https://docs.python.org/zh-cn/3/tutorial/controlflow.html)<br/>
+[Pyhton 中的类](https://docs.python.org/zh-cn/3/tutorial/classes.html)<br/>
 [Python 定义函数](https://docs.python.org/zh-cn/3/tutorial/controlflow.html#defining-functions)
 
 ## 前端基础知识
@@ -133,11 +133,11 @@ html, css, js
 集成了很多功能，
 
 ### 核心组件
-引擎：数据的下载、处理，都会流经引擎。高效处理爬取的数据。
-调度器：对请求排序，结果去重，
-下载器：相比requests更加强大的下载工具
-爬虫：从特定的网页中提取需要的信息。类似BeautifulSoup等
-项目管道：通过管道将数据存入指定的介质中。
+* 引擎：数据的下载、处理，都会流经引擎。高效处理爬取的数据。
+* 调度器：对请求排序，结果去重，
+* 下载器：相比requests更加强大的下载工具
+* 爬虫：从特定的网页中提取需要的信息。类似BeautifulSoup等
+* 项目管道：通过管道将数据存入指定的介质中。
 
 ### scrapy工作流程
 ![scrapy框架](scrapy-1.jpg)
@@ -316,7 +316,7 @@ class SpidersPipeline:
         return item
 ```
   默认行为是直接返回item, 在终端上直接打印item。可以在这里实现item的存储。
-  在此之前，需要在settings.py中的ITEM_PIPELINES中激活组件 
+  在此之前，<font color=#ff0000 size=3 face="黑体">需要在settings.py中的ITEM_PIPELINES中激活组件 </font>
 ```
 ITEM_PIPELINES = {
     'spiders.pipelines.SpidersPipeline': 300,
@@ -356,10 +356,6 @@ def parse2(self, response):
         yield item
 ```
 
-
-
-
-
 ## XPath
 
 
@@ -389,84 +385,70 @@ def parse2(self, response):
 ### XPath路径表达式
 XPath是一门在XML文档中查找信息的语言。XPath使用路径表达式来选取XML文档中的节点或者节点集。
 XPath路径匹配， 以“//”，“/”， “.”, ".."开头，
-表达式|举例|举例说明|
-|-|-|-|
+表达式|说明|
+|-|-|
 |nodename|选取此节点的所有子节点|
-|/|'/div'|从根节点开始找，
-|//|'//div@class="hd"'|从上到下找，标签为div,并且包含属性class,class名为hd|
-|.|'./div'|从当前位置开始向下找|
-|..|'../div'|从平级位置开始找|
+|/|从根节点开始找，
+|//|从上到下找，标签为div,并且包含属性class,class名为hd|
+|.|从当前位置开始向下找|
+|..|从平级位置开始找|
 
 
 
-[XPath在线测试工具](https://www.toolnb.com/tools/xpath.html)
+[XPath在线测试工具](https://www.toolnb.com/tools/xpath.html)<br/>
+测试用例：
 ```
 <!DOCTYPE html>
 <html itemscope itemtype="http://schema.org/WebPage" class="ua-chrome ">
   <head>
       <meta charset="UTF-8">
       <title>豆瓣(手机版)</title>
-      <meta name="format-detection" content="telephone=no">
-      <meta name="description" content="读书、看电影、涨知识、学穿搭...，加入兴趣小组，获得达人们的高质量生活经验，找到有相同爱好的小伙伴。">
       <meta name="keywords" content="豆瓣,手机豆瓣,豆瓣手机版,豆瓣电影,豆瓣读书,豆瓣同城">
-      <link rel="canonical" href="
-https://m.douban.com/">
-      <link href="https://img3.doubanio.com/f/talion/20f294507038a0d03718cd15b4defe16ea78d05a/css/card/base.css" rel="stylesheet">
+      <link rel="canonical" href="https://m.douban.com/">
       
-<script>
-  var saveKey = '_t_splash'
-  var day = 3
-  if (Date.now() - window.localStorage.getItem(saveKey) < 1000 * 60 * 60 * 24 * day) {
-    window.location.replace('/home_guide')
-  } else {
-        window.localStorage.setItem(saveKey, Date.now())
-  }
-</script>
+      <script>
+          window.location.replace('/home_guide')
+      </script>
 
-      <link rel="stylesheet" href="https://img3.doubanio.com/misc/mixed_static/4f3062503e5a7c84.css">
-      <link rel="icon" type="image/png" sizes="48x48" href="https://img3.doubanio.com/f/talion/10a4a913a5715f628e4b598f7f9f2c18621bdcb3/pics/icon/dou48.png">
-      <!-- iOS touch icon -->
-      <link rel="apple-touch-icon-precomposed" href="https://img3.doubanio.com/f/talion/997f2018d82979da970030a5eb84c77f0123ae5f/pics/icon/m_logo_76.png">
-      <link rel="apple-touch-icon-precomposed" sizes="200x200" href="https://img3.doubanio.com/f/talion/7c6364aadf368dc0210173c940cfd0f64ceddc66/pics/icon/m_logo_200.png">
-      <!-- For Android -->
-      <link rel="icon" sizes="192x192" href="https://img3.doubanio.com/f/talion/7c6364aadf368dc0210173c940cfd0f64ceddc66/pics/icon/m_logo_200.png">
-      <!-- For Web App Manifest -->
-      <link type="application/opensearchdescription+xml" rel="search" href="/opensearch"/>
-          <!-- hm baidu -->
-          <script type="text/javascript">
-          var _hmt = _hmt || [];
-          </script>
+      
   </head>
   <body ontouchstart="">
     
     <div class="page">
-        
-  
-  
-  <div class="splash">
-    <div class="splash-content">
-      <div class="splash-pic">
-        <img src="https://img3.doubanio.com/f/talion/706ae8511b66f390ae0427daf85df7ddd93ab1b9/pics/card/splash/splash_bg.jpg" />
+      <div class="splash">
+        <div class="splash-content">
+          <div class="splash-pic">
+            <img src="https://img3.doubanio.com/f/talion/706ae8511b66f390ae0427daf85df7ddd93ab1b9/pics/card/splash/splash_bg.jpg" />
+          </div>
+          <a class="splash-btn" id="home_guide" href="/home_guide">come on &gt;</a>
+        </div>
+        <div class="splash-bottom">
+          <div class="splash-text">
+            <p class="splash-text-main">来豆瓣，记录你的书影音生活</p>
+            <!-- <p>更多书影音讨论在豆瓣App</p> -->
+          </div>
+          <a class="splash-btn" href="https://m.douban.com/to_app?copy_open=1&url=/recommend_feed&source=splash">下载App</a>
+          <a class="splash-link" id="home_guide" href="/home_guide">进入网页版 &gt;</a>
+        </div>
       </div>
-    </div>
-    <div class="splash-bottom">
-      <div class="splash-text">
-        <p class="splash-text-main">来豆瓣，记录你的书影音生活</p>
-        <!-- <p>更多书影音讨论在豆瓣App</p> -->
-      </div>
-      <a class="splash-btn" href="https://m.douban.com/to_app?copy_open=1&url=/recommend_feed&source=splash">下载App</a>
-      <a class="splash-link" id="home_guide" href="/home_guide">进入网页版 &gt;</a>
-    </div>
-  </div>
-
     </div>
     <script src="https://img3.doubanio.com/f/talion/ee8e0c54293aefb5709ececbdf082f8091ad5e49/js/card/zepto.min.js"></script>
     <hahaha> I am in hahaha</hahaha>
+    <enen> Who am I?</enen>
   </body>
 </html>
 ```
 |路径表达式|结果|
 |-|-|
+|/enen|null|
+|/html/body/enen| Who am I?|
+|//enen|Who am I?|
+|/html/body/div/div/div/a[@class="splash-link"]|进入网页版|
+|/html/body/div/div/div[@class="splash-bottom"]/a[@class="splash-btn"]|进入网页版|
+|/html/body/div/div/div[@class="splash-bottom"]/a/@id|home_guide|
+|head|豆瓣(手机版) <br/> window.location.replace('/home_guide')<br/>|
+
+
 
 
 ### 在scrapy中使用选择器
@@ -479,7 +461,7 @@ https://m.douban.com/">
 ```
 * 遍历xpath返回值，继续查找。 获取文本用text(),获取属性用@
 ```
-def parse(self, response):
+    def parse(self, response):
         items = []
         '''
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -525,5 +507,34 @@ def parse(self, response):
         yield item
 ```
 
-## yield和推导式
+## yield
 yield与return的区别
+return 一次性返回
+yield依次返回
+
+```
+def yield_test():
+    def chain():
+        for i in range(5):
+            yield i
+
+    v = chain()
+    print (v)  # <generator object yield_test.<locals>.chain at 0x000000000CF00318>
+    v2 = next(v)
+    print (v2)  # 0
+    v3 = next(v)
+    print (v3)  # 1
+    v4 = list(v)
+    print (v4)  # [2, 3, 4]
+      
+    try:
+        v5 = next(v)
+        print (v5)
+    except Exception as e:
+        print (e.__class__)   # <class 'StopIteration'>
+```
+chain()函数返回一个生成器对象
+
+## 推导式
+用来生成list,tuple,dict
+生成tuple时要显示指定tuple
