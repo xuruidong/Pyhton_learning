@@ -70,8 +70,7 @@ MyException: What are you doing?
 ```
 
 ### 异常打印之大美丽版
-第三方库 pretty_errors
-好像windows下不起作用
+安装并import第三方库 pretty_errors
 
 ### 对于文件的异常处理
 使用[with语句](https://docs.python.org/zh-cn/3/reference/compound_stmts.html#the-with-statement),免去了关闭文件处理
