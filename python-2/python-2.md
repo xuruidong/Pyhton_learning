@@ -117,6 +117,7 @@ c()
 
 ## 使用pymysql
 [Documentation ](https://pymysql.readthedocs.io/en/latest/)
+[PyMySQL tutorial](http://zetcode.com/python/pymysql/)
 python 的类型提示（type hint）,并不是对类型的约束，也不是定义，
 
 ### MySQL的编码
