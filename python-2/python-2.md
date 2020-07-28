@@ -116,3 +116,65 @@ c()
 
 
 ## 使用pymysql
+[Documentation ](https://pymysql.readthedocs.io/en/latest/)
+python 的类型提示（type hint）,并不是对类型的约束，也不是定义，
+
+### MySQL的编码
+utf8mb4  utf8  utf-8 区别
+
+
+### API
+
+```
+def run(self):
+    conn = pymysql.connect(host=self.host, port=self.port,
+                            user=self.user, password=self.password, db=self.db)
+    cur = conn.cursor()
+    # 游标创建时候，开启了一个隐形的事物
+    try:
+        for command in self.sqls:
+            cur.execute(command)
+            result.append(cur.fetchone())
+
+        cur.close()
+        conn.commit()
+    except:
+        conn.rollback()
+    conn.close()
+```
+
+## 模拟浏览器头部信息
+
+### 反爬虫的工作原理:
+* 根据请求信息识别
+* 根据行为来判断, 比如速度等
+
+### 浏览器的基本行为
+* 带http头信息：如User-Agent， Referer, host
+* 带cookies (包含加密的用户名、密码验证信息)
+
+referer可以用来防止跨站，获取跳转前上一个页面的信息。
+
+### fake_useragent
+导入 `from fake_useragent import UserAgent`
+使用UserAgent时，会从网络中请求当前常用的一些浏览器的user-agent,通过`verify_ssl=False` 来设置不进行ssl验证，防止下载失败。
+```
+from fake_useragent import UserAgent
+def useragent_test():
+    ua = UserAgent(verify_ssl=False)
+    print ("=================")
+    print (f"chrome:{ua.chrome}")
+    print (ua.random)
+```
+
+## 模拟登录
+cookies有效期
+
+```
+def http_post_test():
+    r = requests.post("http://httpbin.org/post", data={"key": "value"})
+    print(r.json())
+```
+
+客户端通过post方式将用户名密码上传给服务器，服务器将其加密返回给客户端，客户端将加密的内容作为cookies的一部分。
+模拟用户名密码上传：
