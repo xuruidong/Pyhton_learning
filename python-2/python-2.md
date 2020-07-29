@@ -116,3 +116,10 @@ c()
 
 
 ## 使用pymysql
+使用PyMySQL连接MySQL数据库流程：
+- 创建connection,需要主机，端口，用户名密码等信息
+- 获取游标cursor
+- CRUD
+- 关闭游标
+- 关闭connection
+
