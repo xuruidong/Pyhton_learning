@@ -185,4 +185,30 @@ def http_post_test():
 ```
 
 客户端通过post方式将用户名密码上传给服务器，服务器将其加密返回给客户端，客户端将加密的内容作为cookies的一部分。
-模拟用户名密码上传：
+
+### 模拟用户名密码上传：
+[httpbin cookies](https://httpbin.org/#/Cookies)
+
+```
+def cookies_test():
+    s = requests.Session()
+    # Sets cookie(s) as provided by the query string and redirects to cookie list.
+    # r = s.get('http://httpbin.org/cookies/set/cookies/123457',
+    #          allow_redirects=False)
+    # Sets a cookie and redirects to cookie list.
+    r = s.get("https://httpbin.org/cookies/set?freeform=fffff")
+    #print (r.text)
+    #print (r.headers)
+    #print (r.status_code)
+    #print (dir(r))
+    r = s.get("http://httpbin.org/cookies")
+    print (r.text)
+    print (r.status_code)
+```
+* `requests.Session()` 创建一个session，使两次请求在一个session内。requests默认开启session功能
+* 通过get httpbin.org/cookies/set 来设置cookies, 然后通过访问httpbin.org/cookies来查看cookies
+* requests默认会接受重定向，如果使用默认设置，第一种方式可省略第二次请求
+* 这里可以使用with语句
+
+## WebDriver
+
