@@ -215,3 +215,41 @@ def cookies_test():
 
 ## WebDriver
 
+[相关文档](https://pypi.org/project/selenium/)
+
+```
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+def webdriver_test():
+    edge = webdriver.Edge("msedgedriver.exe")
+    edge.get("http://www.baidu.com")
+    print (edge.title)
+    #elem = edge.find_element_by_id("kw")
+    #elem.send_keys('seleniumhq' + Keys.RETURN)
+    
+    #elem = edge.find_element_by_xpath('//*[@id="kw"]')
+    # elem = edge.find_element_by_link_text()  ????
+    # elem = edge.find_element_by_name('wd')
+    elem = edge.find_element_by_tag_name()  ???
+    
+    elem.send_keys('seleniumhq')
+```
+API没看完
+
+### requests下载大文件
+```
+def big_file_download(url):
+    r = requests.get(url, stream=True)
+    with open("download", "wb") as f:
+        for chunk in r.iter_content(chunk_size=1024):
+            f.write(chunk)
+```
+防止文件过大无法放入内存。
+`param stream: (optional) if ``False``, the response content will be immediately downloaded.`
+
+## 验证码识别
+工具安装
+* 安装依赖库 libpng, libjpeg,libtiff,leptonica   (未操作)
+* 安装tesseract
+  https://github.com/tesseract-ocr/tesseract/wiki
+  
