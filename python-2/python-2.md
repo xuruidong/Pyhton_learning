@@ -205,10 +205,13 @@ def cookies_test():
     print (r.text)
     print (r.status_code)
 ```
-* `requests.Session()` 创建一个session，使两次请求在一个session内。requests默认开启session功能
+* `requests.Session()` 创建一个session，使两次请求在一个session内。在同一个Session实例发出的请求之间保持cookies。requests默认开启session功能，
+  使用urllib3 的connection pooling功能，向同一主机发送多个请求，复用TCP连接
 * 通过get httpbin.org/cookies/set 来设置cookies, 然后通过访问httpbin.org/cookies来查看cookies
 * requests默认会接受重定向，如果使用默认设置，第一种方式可省略第二次请求
 * 这里可以使用with语句
+
+一般用户登录是通过post方式提交表单，
 
 ## WebDriver
 
