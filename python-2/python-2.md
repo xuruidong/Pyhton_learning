@@ -1,4 +1,4 @@
-# Python训练营2
+# Python-2 进击的菜鸟
 
 ## 异常的捕获
 异常并不完全是错误。
@@ -252,4 +252,104 @@ def big_file_download(url):
 * 安装依赖库 libpng, libjpeg,libtiff,leptonica   (未操作)
 * 安装tesseract
   https://github.com/tesseract-ocr/tesseract/wiki
-  
+
+
+## scrapy中间件
+### scrapy日志分析
+首先，使用scrapy, 爬取httpbin.org/ip可以得到出口IP地址
+```
+class MoviesSpider(scrapy.Spider):
+    name = 'movies'
+    allowed_domains = ['httpbin.org']
+    start_urls = ['http://httpbin.org/ip']
+
+    def parse(self, response):
+        print ("===========================")
+        print (response.text)
+        print ("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+```
+以下是scrapy打印的日志信息：
+```
+  1 2020-07-31 16:41:48 [scrapy.utils.log] INFO: Scrapy 2.2.1 started (bot: spider1)
+  2 2020-07-31 16:41:48 [scrapy.utils.log] INFO: Versions: lxml 4.3.0.0, libxml2 2.9.5, cssselect 1.1.0, parsel 1.6.0, w3lib 1.22.0, Twisted 20.3.0, Python 3.7.2 (tags/v3.7.2:9a3ffc0492, Dec 23 2018, 23:09:28) [MSC v.1916 64 bit (AMD64)],     pyOpenSSL 19.0.0 (OpenSSL 1.1.1b  26 Feb 2019), cryptography 2.6.1, Platform Windows-10-10.0.18362-SP0
+  3 2020-07-31 16:41:48 [scrapy.utils.log] DEBUG: Using reactor: twisted.internet.selectreactor.SelectReactor
+  4 2020-07-31 16:41:48 [scrapy.crawler] INFO: Overridden settings:
+  5 {'BOT_NAME': 'spider1',
+  6  'NEWSPIDER_MODULE': 'spider1.spiders',
+  7  'ROBOTSTXT_OBEY': True,
+  8  'SPIDER_MODULES': ['spider1.spiders']}
+  9 2020-07-31 16:41:48 [scrapy.extensions.telnet] INFO: Telnet Password: 650927d40fa72324
+ 10 2020-07-31 16:41:48 [scrapy.middleware] INFO: Enabled extensions:
+ 11 ['scrapy.extensions.corestats.CoreStats',
+ 12  'scrapy.extensions.telnet.TelnetConsole',
+ 13  'scrapy.extensions.logstats.LogStats']
+ 14 2020-07-31 16:41:48 [scrapy.middleware] INFO: Enabled downloader middlewares:
+ 15 ['scrapy.downloadermiddlewares.robotstxt.RobotsTxtMiddleware',
+ 16  'scrapy.downloadermiddlewares.httpauth.HttpAuthMiddleware',
+ 17  'scrapy.downloadermiddlewares.downloadtimeout.DownloadTimeoutMiddleware',
+ 18  'scrapy.downloadermiddlewares.defaultheaders.DefaultHeadersMiddleware',
+ 19  'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware',
+ 20  'scrapy.downloadermiddlewares.retry.RetryMiddleware',
+ 21  'scrapy.downloadermiddlewares.redirect.MetaRefreshMiddleware',
+ 22  'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware',
+ 23  'scrapy.downloadermiddlewares.redirect.RedirectMiddleware',
+ 24  'scrapy.downloadermiddlewares.cookies.CookiesMiddleware',
+ 25  'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware',
+ 26  'scrapy.downloadermiddlewares.stats.DownloaderStats']
+ 27 2020-07-31 16:41:48 [scrapy.middleware] INFO: Enabled spider middlewares:
+ 28 ['scrapy.spidermiddlewares.httperror.HttpErrorMiddleware',
+ 29  'scrapy.spidermiddlewares.offsite.OffsiteMiddleware',
+ 30  'scrapy.spidermiddlewares.referer.RefererMiddleware',
+ 31  'scrapy.spidermiddlewares.urllength.UrlLengthMiddleware',
+ 32  'scrapy.spidermiddlewares.depth.DepthMiddleware']
+ 33 2020-07-31 16:41:48 [scrapy.middleware] INFO: Enabled item pipelines:
+ 34 []
+ 35 2020-07-31 16:41:48 [scrapy.core.engine] INFO: Spider opened
+ 36 2020-07-31 16:41:48 [scrapy.extensions.logstats] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+ 37 2020-07-31 16:41:48 [scrapy.extensions.telnet] INFO: Telnet console listening on 127.0.0.1:6023
+ 38 2020-07-31 16:41:49 [scrapy.core.engine] DEBUG: Crawled (200) <GET http://httpbin.org/robots.txt> (referer: None)
+ 39 2020-07-31 16:41:50 [scrapy.core.engine] DEBUG: Crawled (200) <GET http://httpbin.org/ip> (referer: None)
+ 40 ===========================
+ 41 {
+ 42   "origin": "118.26.73.76"
+ 43 }
+ 44
+ 45 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 46 2020-07-31 16:41:50 [scrapy.core.engine] INFO: Closing spider (finished)
+ 47 2020-07-31 16:41:50 [scrapy.statscollectors] INFO: Dumping Scrapy stats:
+ 48 {'downloader/request_bytes': 442,
+ 49  'downloader/request_count': 2,
+ 50  'downloader/request_method_count/GET': 2,
+ 51  'downloader/response_bytes': 425,
+ 52  'downloader/response_count': 2,
+ 53  'downloader/response_status_count/200': 2,
+ 54  'elapsed_time_seconds': 1.627012,
+ 55  'finish_reason': 'finished',
+ 56  'finish_time': datetime.datetime(2020, 7, 31, 8, 41, 50, 316774),
+ 57  'log_count/DEBUG': 2,
+ 58  'log_count/INFO': 10,
+ 59  'response_received_count': 2,
+ 60  'robotstxt/request_count': 1,
+ 61  'robotstxt/response_count': 1,
+ 62  'robotstxt/response_status_count/200': 1,
+ 63  'scheduler/dequeued': 1,
+ 64  'scheduler/dequeued/memory': 1,
+ 65  'scheduler/enqueued': 1,
+ 66  'scheduler/enqueued/memory': 1,
+ 67  'start_time': datetime.datetime(2020, 7, 31, 8, 41, 48, 689762)}
+ 68 2020-07-31 16:41:50 [scrapy.core.engine] INFO: Spider closed (finished)
+```
+
+* 1~3行输出一些组件版本信息等，使用twisted框架
+* 4~8行是一些settings.py中的配置信息
+* 9~34行是加载的中间件信息。这里的中间件是scrapy默认加载的中间件。
+* 40~45， parse打印的内容
+* 47~67， 打印scrapy状态，downloader信息，scheduler信息
+
+如果不关心日志，可以使用--nolog选项来关闭日志。
+
+### 使用下载中间件修改代理IP
+scrapy默认支持系统代理导入功能。
+如果是Unix-like系统，可以导出环境变量http_proxy来设置HTTP代理,[一篇blog](https://www.cnblogs.com/EasonJim/p/9826681.html)
+设置代理后，再settings.py
+下载中间件可以指定优先级。
