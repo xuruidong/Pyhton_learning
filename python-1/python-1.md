@@ -323,7 +323,12 @@ ITEM_PIPELINES = {
     'spiders.pipelines.SpidersPipeline': 300,
 }
 ```
-
+#### SpidersItem分析
+从parse方法实现中看到， SpidersItem可以使用类似字典操作方法，其定义在items.py中， `class SpidersItem(scrapy.Item)`, 继承了`scrapy.Item`
+`scrapy.Item` 定义在item.py中， `class Item(DictItem, metaclass=ItemMeta)`, DictItem类中实现了__getitem__() 等魔术方法，就可以使用[]来操作
+如果需要自定义类实现类似字典的操作，可以直接继承dict
+如果功能不完全一致，修改字典里的方法即可，比如__getitem__()
+也可以不继承dict, 直接实现相应的方法，如 `__setitem__`，`__getitem__` 
 
 ### 其他设置
 user-agent设置

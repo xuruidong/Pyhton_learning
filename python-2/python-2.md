@@ -69,7 +69,7 @@ Traceback (most recent call last):
 MyException: What are you doing?
 ```
 
-### 异常打印之大美丽版
+### 异常打印之“大美丽”版
 安装并import第三方库 pretty_errors
 
 ### 对于文件的异常处理
@@ -348,8 +348,125 @@ class MoviesSpider(scrapy.Spider):
 
 如果不关心日志，可以使用--nolog选项来关闭日志。
 
-### 使用下载中间件修改代理IP
-scrapy默认支持系统代理导入功能。
-如果是Unix-like系统，可以导出环境变量http_proxy来设置HTTP代理,[一篇blog](https://www.cnblogs.com/EasonJim/p/9826681.html)
-设置代理后，再settings.py
-下载中间件可以指定优先级。
+### scrapy加载系统代理IP
+* scrapy默认支持系统代理导入功能。
+* 如果是Unix-like系统，可以导出环境变量http_proxy来设置HTTP代理,[一篇blog](https://www.cnblogs.com/EasonJim/p/9826681.html)
+windows 可以在Internet属性中设置代理。
+* 设置代理后，在settings.py中编辑DOWNLOADER_MIDDLEWARES，填写需要加载的中间件。
+  加载'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware'
+HttpProxyMiddleware在Python37\Lib\site-packages\scrapy\downloadermiddlewares\httpproxy.py
+如果是windows, 读取注册表， linux读环境变量
+* 下载中间件可以指定优先级， 根据优先级来确定加载顺序。如果需要屏蔽某个中间件，可以将优先级值写为`None`
+* 如果要加载自己写的中间件，请转到middlewares.py房间， 编写中间件类。建议继承默认提供的类，然后再进行实现。
+
+
+### 自己实现下载中间件
+自定义中间件需要实现的功能：
+读取settings配置
+
+##### 编写一个下载中间件，需要实现的4个主要方法：
+|方法|说明|
+|-|-|
+|`process_request(request, spider)`|request对象经过下载中间件时会被调用，优先级高先调用|
+|`process_response(request, response, spider)`|response对象经过下载中间件时会被调用，优先级高后调用|
+|`process_exception(request, exception, spider)`|当process_respinse()和process_request()抛出异常时会被调用|
+|`from_crawler(cls, crawler)`|使用crawler来创建中间件对象，并**必须**返回一个中间件对象。一般在这里做一些初始化工作|
+
+##### settings.py配置书写规则：
+默认配置项名要大写， 自定义配置项建议大写
+
+##### 自定义中间件实现流程
+* 在settings.py中实现所需的配置项
+* 在middlewares.py中实现中间件类
+* 在DOWNLOADER_MIDDLEWARES中填写中间件导入路径，设置优先级。路径为  工程名.middlewares.中间件类名
+
+
+##### 随机代理中间件的实现
++ settings.py配置项
+  ```
+  HTTP_PROXY_LIST = [
+    'http://52.179.52.52:89',
+    'http://112.112.112.112:1122'
+  ]
+  ```
++ 参考HttpProxyMiddleware类， 所以直接继承HttpProxyMiddleware实现
+引入HttpProxyMiddleware 
+`from scrapy.downloadermiddlewares.httpproxy import HttpProxyMiddleware `
+`class RandomHttpProxyMiddleware(HttpProxyMiddleware):`
++ 读取settings配置
+  中间件对象是在 from_crawler 由 crawler 创建的，所以要在 from_crawler 中读配置， 然后传参给 中间件的 `__init__`。
+  from_crawler是一个类方法。在这里使用crawler.settings.get()方法来获取配置。如果配置不存在，抛出 NotConfigured 异常
+  NotConfigured 在scrapy.exceptions中实现的，直接引入即可。
+  ```
+    def __init__(self, auth_encoding='latin-1', proxy_list=None):
+        self.auth_encoding = auth_encoding
+        self.proxies = defaultdict(list)
+        for proxy in proxy_list:
+            result = urlparse(proxy)
+            # self.proxies[result[0]].append(proxy)
+            self.proxies[result.scheme].append(proxy)
+        print (self.proxies)
+        # for type_, url in getproxies().items():
+            # self.proxies[type_] = self._get_proxy(url, type_)
+        #    print (type_)
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        if not crawler.settings.getbool('HTTPPROXY_ENABLED'):
+            raise NotConfigured
+        proxy_list = crawler.settings.get('HTTP_PROXY_LIST')
+        print ("=============%s", proxy_list)
+        if not proxy_list:
+            raise NotConfigured
+        auth_encoding = crawler.settings.get('HTTPPROXY_AUTH_ENCODING')
+        return cls(auth_encoding, proxy_list)
+  ```
++ 实现_set_proxy
+  ```
+    def _set_proxy(self, request, scheme):
+        proxy = random.choice(self.proxies[scheme])
+        print ("~~~~~~ ", proxy)
+
+        request.meta['proxy'] = proxy
+  ```
+
+##### 其他知识点
+[defaultdict](https://docs.python.org/3/library/collections.html)
+装饰器
+
+类方法：
+```
+def classmethod_test():
+    class A(object):
+        def __init__(self, arg):
+            print ("in __init__, arg=%s" % arg)
+            self.name = arg
+
+        def age(self):
+            print("age=18")
+            return 18
+        
+        @classmethod
+        def callme(cls, who):
+            print("who am I?")
+            print (who)
+            cls.age(cls)
+            
+            return cls(who)
+
+        def getname(self):
+            return self.name
+
+    a = A.callme("nb")
+    print (a.getname())
+```
+
+## 分布式爬虫
+
+scrapy 原生不支持分布式，多机之间需要Redis 实现队列和管道的共享。
+scrapy-redis很好地实现了scrapy 和 Redis 的集成。
+
+使用 scrapy-redis 之后，scrapy 的主要变化：
++ 使用了 RedisSpider 类代替了 Spider 类
++ Scheduler 的 queue 由 Redis 实现
++ item pipline 由 Redis 实现

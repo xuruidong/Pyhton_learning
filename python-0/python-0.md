@@ -21,3 +21,16 @@ b = set(a)
 [global]
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 ```
+
+### PEP8
+[PEP 8 -- Style Guide for Python Code](https://www.python.org/dev/peps/pep-0008/)
+
+
+### 书籍
+《流畅的Python》  魔术方法
+《Python cook book》 3rd  Python的使用
+《编写高质量代码：改善Python程序的91个建议》  如何更高效
+设计模式，数据结构，算法
+
+##### args
+[知乎](https://zhuanlan.zhihu.com/p/50804195)
