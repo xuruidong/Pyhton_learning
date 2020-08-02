@@ -252,11 +252,47 @@ def big_file_download(url):
 * 安装依赖库 libpng, libjpeg,libtiff,leptonica   (未操作)
 * 安装tesseract
   https://github.com/tesseract-ocr/tesseract/wiki
+* MSYS2 可能会将tesseract安装到mingw64/bin下， 添加到PATH即可
+* 设施环境变量 TESSDATA_PREFIX为 D:\msys64\mingw64\share\tessdata
+* 考虑到环境变量生效问题，可在命令行下临时设置 TESSDATA_PREFIX
+  ```
+  set TESSDATA_PREFIX=D:\msys64\mingw64\share\tessdata
+  tesseract c_th.jpg out
+  ```
+* 安装 pillow  `pip install pillow`
+* 安装 pytesseract  `pip install pytesseract`
 
+```
+from PIL import Image
+import pytesseract
+def tesseract_test():
+    
+    im = Image.open('img_test.jpg')
+    im.show()
+    
+    gray = im.convert('L')
+    gray.save('c_gray.jpg')
+    im.close()
+    
+    threshold = 100
+    table = []
+
+    for i in range(256):
+        if i < threshold:
+            table.append(0)
+        else:
+            table.append(1)
+
+    out = gray.point(table, '1')
+    out.save('c_th.jpg')
+    
+    th = Image.open('c_th.jpg')
+    print(pytesseract.image_to_string(th, lang='eng'))
+```
 
 ## scrapy中间件
 ### scrapy日志分析
-首先，使用scrapy, 爬取httpbin.org/ip可以得到出口IP地址
+首先，使用scrapy, 爬取 httpbin.org/ip 可以得到出口IP地址
 ```
 class MoviesSpider(scrapy.Spider):
     name = 'movies'
