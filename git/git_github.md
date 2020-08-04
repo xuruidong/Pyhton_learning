@@ -59,3 +59,15 @@ coding...
 add, commit, push
 
 
+### 分支操作
+创建分支
+`git branch <branchname>`
+
+切换分支
+`git checkout <branchname>`
+
+列出所有分支
+`git branch`
+
+删除分支
+合并分支
