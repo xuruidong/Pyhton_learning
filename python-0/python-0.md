@@ -34,3 +34,5 @@ index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 
 ##### args
 [知乎](https://zhuanlan.zhihu.com/p/50804195)
+
+wing 中快速注释 Ctrl+.

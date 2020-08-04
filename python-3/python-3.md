@@ -69,3 +69,110 @@ def args_test():
 
 ###  twisted
 [Twisted documentation](https://twistedmatrix.com/documents/current/)
+
+demo 没理解
+<font color=#ff0000 size=5 face="黑体">在teisted 中，callbakc 是怎么和事件绑定的？只是添加callback, 确没有指定事件 </font>
+
+## 多进程
+
+#### 进程创建
+* `os.fork()` 在类unix中使用， 根据返回值来判断父进程和子进程
+* 使用 multiprocessing 库
+
+#### Process
+[来源](http://c.biancheng.net/view/2632.html)
+multiprocessing 模块提供了 Process 类，该类可用来在 Windows 平台上创建新进程。和使用 Thread 类创建多线程方法类似，使用 Process 类创建多进程也有以下 2 种方式：
+1. 直接创建 Process 类的实例对象，由此就可以创建一个新的进程；
+2. 通过继承 Process 类的子类，创建实例对象，也可以创建新的进程。注意，继承 Process 类的子类需重写父类的 run() 方法。
+
+##### Process 常用属性和方法
+|属性名或方法名|功能|
+|-|-|
+
+
+Process()对象支持的方法 `['_Popen', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__slotnames__', '__str__', '__subclasshook__', '__weakref__', '_bootstrap', '_check_closed', '_closed', '_config', '_identity', '_name', '_parent_pid', '_popen', '_sentinel', '_start_method', 'authkey', 'close', 'daemon', 'exitcode', 'ident', 'is_alive', 'join', 'kill', 'name', 'pid', 'run', 'sentinel', 'start', 'terminate']`
+
+### 多进程调试
+print大法好
+可以打印pid, CPU, 等信息
+模块名打印 `print (__name__)`
+CPU核心数 `print (multiprocessing.cpu_count())`
+
+#### super()
+* 如果子类有了`__init__()`, 就不会去执行父类的`__init__()`
+* 如果子类没有`__init__()`, 就会去执行父类的`__init__()`
+* 可以使用super()执行父类中的函数， 比如`__init__()`
+* super() 只是执行上一级父类中的函数，能否迭代调用祖先父类中的函数，要看父类函数如何实现了。
+
+```
+def super_test():
+    class A(object):
+        def __init__(self, arg):
+            print ("class A __init__")
+            self.arg = arg
+
+        def get_arg(self):
+            print (self.arg)
+
+    class B(A):
+        def __init__(self, arg):
+            print ("B __init__")
+            self.arg = arg
+
+    class C(A):
+        pass
+
+    class D(A):
+        def __init__(self, arg):
+            print ("D __init__")
+            super().__init__(arg)
+            self.arg = arg + 2
+
+    class E(B):
+        def __init__(self, arg):
+            print ("E __init__")
+            super().__init__(arg)
+            self.arg = arg
+
+    class F(D):
+        def __init__(self, arg):
+            print ("F __init__")
+            super().__init__(arg)
+            self.arg = arg
+
+    b = B(100)
+    b.get_arg()
+
+    c = C(200)
+    c.get_arg()
+
+    d = D(300)
+    d.get_arg()
+
+    e = E(400)
+    e.get_arg()
+
+    f = F(500)
+    f.get_arg()
+```
+输出结果：
+```
+B __init__
+100
+class A __init__
+200
+D __init__
+class A __init__
+302
+E __init__
+B __init__
+400
+F __init__
+D __init__
+class A __init__
+500
+```
+
+### 进程间通信
+
+Python 中的进程队列原理是什么
