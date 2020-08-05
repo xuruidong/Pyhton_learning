@@ -183,6 +183,24 @@ class A __init__
 
 Python 中的进程队列原理是什么
 
+#### 队列
+Queue的init
+`def __init__(self, maxsize=0, *, ctx)`
+
+Queue  init  里的ctx,  是 <class 'multiprocessing.context.SpawnContext'>
+import 的过程：  multiprocessing\__init__.py  -->  from . import context  -->
+
+from multiprocessing import Queue  ，其实是导入 multiprocessing.context.BaseContext.Queue，   
+```
+def Queue(self, maxsize=0):
+        '''Returns a queue object'''
+        from .queues import Queue
+        return Queue(maxsize, ctx=self.get_context())
+```
+#### 命名关键字参数
+用来限制传参的名字， 不想关键字参数 **kwargs 可以传任意参数，不管有用没用
+[抄一篇博客，压压惊](https://www.cnblogs.com/wkkkkk/p/5731947.html)
+
 
 
 jk:

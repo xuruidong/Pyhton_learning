@@ -57,6 +57,8 @@ import os
 import sys
 
 num = 100
+
+
 def run(*args):
     global num
     print("子进程开启")
@@ -80,13 +82,31 @@ def process_test():
     for i in range(10):
         num -= 1
         print ("father %d" % num)
-        time.sleep(0.5)    
+        time.sleep(0.5)
     p.join()
     print (multiprocessing.cpu_count())
     time.sleep(2)
     print("父进程结束")
     # time.sleep(2)
 
+# from queue import Queue
+
+from multiprocessing import Queue
+def f(q):
+    time.sleep(1)
+    q.put("xxxx")
+    print("child end")
+    
+    
+def multi_queue_test():
+    q = Queue()
+    p = Process(target=f, args=(q, ))
+    p.start()
+    r = q.get()
+    print (r)
+    p.join()
+    
+    
 
 def super_test():
     class A(object):
@@ -96,7 +116,6 @@ def super_test():
 
         def get_arg(self):
             print (self.arg)
-            
 
     class B(A):
         def __init__(self, arg):
@@ -123,25 +142,27 @@ def super_test():
             print ("F __init__")
             super().__init__(arg)
             self.arg = arg
-            
+
     b = B(100)
     b.get_arg()
-    
+
     c = C(200)
     c.get_arg()
-    
+
     d = D(300)
     d.get_arg()
-            
+
     e = E(400)
     e.get_arg()
-    
+
     f = F(500)
     f.get_arg()
+
 
 if __name__ == "__main__":
     print ("===  start  ===")
     # args_test()
-    process_test()
-    #super_test()
+    # process_test()
+    # super_test()
+    multi_queue_test()
     print ("===  end  ===")
