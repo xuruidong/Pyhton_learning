@@ -175,4 +175,26 @@ class A __init__
 
 ### 进程间通信
 
+#### 进程间数据共享方式
+
+队列
+管道
+共享内存
+
 Python 中的进程队列原理是什么
+
+
+
+jk:
+root@ubuntu:~# cat /sys/class/net/tap1/tun_flags
+0x1901 能通过这个flag间接看出来
+
+jk:
+#define IFF_MULTI_QUEUE 0x0100
+
+Hsu Jui-tung:
+这个只有标志， 没有队列数量吗
+
+jk:
+貌似没有，代码里写死的8个queue
+

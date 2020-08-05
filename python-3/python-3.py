@@ -56,20 +56,31 @@ from multiprocessing import Process
 import os
 import sys
 
-
+num = 100
 def run(*args):
+    global num
     print("子进程开启")
     print (args)
     sys.stdout.flush()
+    for i in range(10):
+        num += 1
+        print ("child %d" % num)
+        sys.stdout.flush()
+        time.sleep(0.5)
     time.sleep(2)
     print("子进程结束")
 
 
 def process_test():
+    global num
     print("父进程启动")
     p = Process(target=run, name="child", args=(1, 2, 3))
     p.start()
-    print (dir(p))
+    #print (dir(p))
+    for i in range(10):
+        num -= 1
+        print ("father %d" % num)
+        time.sleep(0.5)    
     p.join()
     print (multiprocessing.cpu_count())
     time.sleep(2)
@@ -129,7 +140,8 @@ def super_test():
     f.get_arg()
 
 if __name__ == "__main__":
+    print ("===  start  ===")
     # args_test()
-    # process_test()
-    super_test()
+    process_test()
+    #super_test()
     print ("===  end  ===")
