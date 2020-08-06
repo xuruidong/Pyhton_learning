@@ -89,7 +89,7 @@ def process_test():
     print("父进程结束")
     # time.sleep(2)
 
-# from queue import Queue
+
 
 from multiprocessing import Queue
 def f(q):

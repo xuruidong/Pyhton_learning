@@ -203,6 +203,28 @@ def Queue(self, maxsize=0):
 
 
 
+#### 管道
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 jk:
 root@ubuntu:~# cat /sys/class/net/tap1/tun_flags
 0x1901 能通过这个flag间接看出来
