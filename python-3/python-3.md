@@ -92,6 +92,8 @@ multiprocessing 模块提供了 Process 类，该类可用来在 Windows 平台�
 
 Process()对象支持的方法 `['_Popen', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__slotnames__', '__str__', '__subclasshook__', '__weakref__', '_bootstrap', '_check_closed', '_closed', '_config', '_identity', '_name', '_parent_pid', '_popen', '_sentinel', '_start_method', 'authkey', 'close', 'daemon', 'exitcode', 'ident', 'is_alive', 'join', 'kill', 'name', 'pid', 'run', 'sentinel', 'start', 'terminate']`
 
+Process创建的进程， 主进程默认会等待子进程结束。
+
 ### 多进程调试
 print大法好
 可以打印pid, CPU, 等信息
@@ -177,9 +179,9 @@ class A __init__
 
 #### 进程间数据共享方式
 
-队列
-管道
-共享内存
+* 队列
+* 管道
+* 共享内存
 
 Python 中的进程队列原理是什么
 
@@ -247,7 +249,116 @@ def sharememory_test():
 ```
 
 ### 进程锁
+```
+from multiprocessing import Lock
+def lock_test_job(v, num, l):
+    l.acquire()
+    for _ in range(5):
+        time.sleep(0.1)
+        v.value += num
+        print (v.value, end="|")
+        sys.stdout.flush()
+    l.release()
+    
+def lock_test():
+    l = Lock()
+    v = Value('i', 0)
 
+    p1 = Process(target=lock_test_job, args=(v, 1, l))
+    p2 = Process(target=lock_test_job, args=(v, 1, l))
+    p1.start()
+    p2.start()
+
+    p1.join()
+    p2.join()
+```
+
+好像是用信号量实现的， Posix 信号量，System V信号量
+此外还可以使用线程锁共享， 将线程锁设置为进程间共享。
+匿名锁与命名锁
+[继续抄！](https://blog.csdn.net/luansxx/article/details/7736618)
+
+
+### 进程池
+```
+from multiprocessing import Pool
+
+def pool_test():
+    p = Pool(4)
+    for i in range(10):
+        p.apply_async(run, (i,))
+
+    p.close()
+    p.join()
+```
+
+如果我们用的是进程池，在调用join()之前必须要先close()
+并且在close()之后不能再继续往进程池添加新的进程
+terminate()：一旦运行到此步，不管任务是否完成，立即终止。
+
+```
+def pool_test2():
+    with Pool(processes=4) as pool:
+        result = pool.apply_async(time.sleep, (3,))
+        print (type(result))
+        print (dir(result))
+        print (result.get(timeout=1))
+```
+Pool 支持上下文管理器
+获取结果可设置超时
+
+#### Pool.map
+这是什么？
+```
+def map_test_fun(x):
+    return (x * x)
+    
+
+def map_test():
+    with Pool(processes=4) as pool:
+        #print (pool.map(map_test_fun, range(10)))
+        for r in pool.imap(map_test_fun, range(10)):
+            print (r)
+```
+map 以 list 形式返回结果， imap 返回结果的迭代器
+
+
+## 多线程
+
+### 线程的创建
+使用 threading
+* 函数方式创建 `threading.Thread(target = f, args=("ddd",))`
+* 类方式创建 `class MyThread(threading.Thread)`
+
+使用类方式创建，记得在`__init__` 中执行super()
+可以通过is_alive() 方法获取线程运行状态
+getName()
+
+
+### 可重入锁 threading.RLock()
+A reentrant lock must be released by the thread that acquired it. Once a
+    thread has acquired a reentrant lock, the same thread may acquire it
+    again without blocking; the thread must release it once for each time it has acquired it.
+使得函数可以递归调用
+
+### Condition
+
+### BoundedSemaphore
+
+
+### Event
+
+### timer
+
+
+### queue
+
+### dequeue
+
+### deamon
+观察状态
+
+### 线程池
 
 
 

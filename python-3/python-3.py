@@ -64,12 +64,12 @@ def run(*args):
     print("子进程开启")
     print (args)
     sys.stdout.flush()
-    for i in range(10):
+    for i in range(5):
         num += 1
         print ("child %d" % num)
         sys.stdout.flush()
         time.sleep(0.5)
-    time.sleep(2)
+    time.sleep(1)
     print("子进程结束")
 
 
@@ -207,7 +207,62 @@ def sharememory_test():
 
     print(num.value)
     print(arr[:])
+
+
+from multiprocessing import Lock
+def lock_test_job(v, num, l):
+    l.acquire()
+    for _ in range(5):
+        time.sleep(0.1)
+        v.value += num
+        print (v.value, end="|")
+        # sys.stdout.flush()
+    l.release()
     
+def lock_test():
+    l = Lock()
+    v = Value('i', 0)
+
+    p1 = Process(target=lock_test_job, args=(v, 1, l))
+    p2 = Process(target=lock_test_job, args=(v, 1, l))
+    p1.start()
+    p2.start()
+
+    p1.join()
+    p2.join()
+
+
+from multiprocessing import Pool
+
+def pool_test():
+    p = Pool(4)
+    for i in range(10):
+        p.apply_async(run, (i,))
+
+    p.close()
+    p.join()
+
+    
+def pool_test2():
+    with Pool(processes=4) as pool:
+        result = pool.apply_async(time.sleep, (3,))
+        print (type(result))
+        print (dir(result))
+        print (result.get(timeout=1))
+
+
+def map_test_fun(x):
+    return (x * x)
+    
+
+def map_test():
+    with Pool(processes=4) as pool:
+        #print (pool.map(map_test_fun, range(10)))
+        for r in pool.imap(map_test_fun, range(10)):
+            print (r)
+
+import threading
+
 if __name__ == "__main__":
     print ("===  start  ===")
     # args_test()
@@ -215,5 +270,9 @@ if __name__ == "__main__":
     # super_test()
     # multi_queue_test()
     # pipe_test()
-    sharememory_test()
+    # sharememory_test()
+    # lock_test()
+    # pool_test()
+    # pool_test2()
+    map_test()
     print ("===  end  ===")
