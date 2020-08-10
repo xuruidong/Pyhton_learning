@@ -36,3 +36,6 @@ index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 [知乎](https://zhuanlan.zhihu.com/p/50804195)
 
 wing 中快速注释 Ctrl+.
+
+### Python 魔术方法
+
