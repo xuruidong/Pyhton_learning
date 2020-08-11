@@ -45,15 +45,51 @@ def DateFrame_test():
     d.index = ['A', 'B']
     print(d)
 
+
 def pd_read_test():
     data = pd.read_csv()
     data2 = pd.read_excel()
     data3 = pd.read_sql()
+
+
+import numpy as np
+
+def pre_proc_test():
+    s = pd.Series([1, 2, np.nan, 3, 4, 5, 6, np.nan, 7])
+    print ("has nan? ", s.hasnans)
+
+    new_s = s.fillna(value=s.mean())
+    print (new_s)
+    
+    df = pd.DataFrame({"A": [5, 3, None, 4],
+                 "B": [None, 2, 4, 3],
+                 "C": [4, 3, 8, 5],
+                 "D": [5, 4, 2, None]})
+    print (df)
+    print (df.isnull().sum())
+    new_df = df.ffill()
+    print (new_df)
+    
+    new_df = df.ffill(axis=1)
+    print (new_df)
+    
+    new_df = df.dropna()
+    print (new_df)
+    
+    new_df = df.fillna('ok')
+    print (new_df)
+
+    new_df = df.drop_duplicates()
+    print (new_df)
+    
+    
+
     
 if __name__ == "__main__":
     # sklearn_test()
     # file_path_test()
     # series_test()
-    DateFrame_test()
+    # DateFrame_test()
+    pre_proc_test()
     print ("===  end  ===")
     

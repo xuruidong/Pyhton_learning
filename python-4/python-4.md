@@ -83,3 +83,51 @@ def pd_read_test():
 
 ## Pandas 数据预处理
 缺失值处理  重复值处理
+### 缺失值处理
+```
+import numpy as np
+
+def pre_proc_test():
+    s = pd.Series([1, 2, np.nan, 3, 4, 5, 6, np.nan, 7])
+    print ("has nan? ", s.hasnans)
+
+    new_s = s.fillna(value=s.mean())
+    print (new_s)
+    
+    df = pd.DataFrame({"A": [5, 3, None, 4],
+                 "B": [None, 2, 4, 3],
+                 "C": [4, 3, 8, 5],
+                 "D": [5, 4, 2, None]})
+    print (df)
+    print (df.isnull().sum())
+    new_df = df.ffill()
+    print (new_df)
+    
+    new_df = df.ffill(axis=1)
+    print (new_df)
+    
+    new_df = df.dropna()
+    print (new_df)
+    
+    new_df = df.fillna('ok')
+    print (new_df)
+
+    new_df = df.drop_duplicates()
+    print (new_df)
+
+```
+* 空值可以使用 numpy 中的 nan 代表
+* Series 的 hasnans 属性可以检查是否存在空值
+* fillna方法可以用来填充空值， `value=s.mean()` 表示用平均值来填充
+* DataFrame 可以使用 isnull() 方法来查看空值情况，但不方便，可以使用DataFrame.idnull().sum()来查看空值统计情况，这时对列空值的统计
+* ffill() 可以使用上一行的值来填充空值，对第一行有空值的情况无法填充
+* ffill(axis=1) 用前一列的值来填充
+* dropna() 可以删除缺失值
+* fillna() 缺失值填充
+
+
+### 重复值处理
+* drop_duplicates() 去掉重复值
+
+
+## Pandas 数据调整
