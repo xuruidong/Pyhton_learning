@@ -83,13 +83,21 @@ def pre_proc_test():
     print (new_df)
     
     
+def pandas_adjust_test():
+    df = pd.DataFrame({"A": [5, 3, None, 4],
+                 "B": [None, 2, 4, 3],
+                 "C": [4, 3, 8, 5],
+                 "D": [5, 4, 2, None]})
 
+    ndf = df[['A', 'C']]
+    print (ndf)
     
 if __name__ == "__main__":
     # sklearn_test()
     # file_path_test()
     # series_test()
     # DateFrame_test()
-    pre_proc_test()
+    # pre_proc_test()
+    pandas_adjust_test()
     print ("===  end  ===")
     

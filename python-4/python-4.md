@@ -131,3 +131,5 @@ def pre_proc_test():
 
 
 ## Pandas 数据调整
+* 通过列名，可以筛选出相应的列，需要使用 list 指定列
+* 
