@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from sklearn import datasets
+#from sklearn import datasets
 import os
 import pandas as pd
 
@@ -91,6 +91,17 @@ def pandas_adjust_test():
 
     ndf = df[['A', 'C']]
     print (ndf)
+    
+    ndf = df.iloc[:, [0, 1]]
+    print (ndf)
+    
+    ndf = df.loc[ [0, 2] ]
+    print (ndf)
+    ndf = df.loc[0:2]
+    print (ndf)
+    
+    
+    
     
 if __name__ == "__main__":
     # sklearn_test()
