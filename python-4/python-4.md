@@ -135,3 +135,14 @@ def pre_proc_test():
 * 可以通过列序号来筛选列， 
 * DataFrame.loc[] 可以用来行选择， 参数为 
 * 比较
+* replace 替换。可以替换空值，单值，多值（list 指定被替换的值）
+* 排序。sort_values， 通过“by” 来指定排序的参考列，ascending 来指定升序或降序。 还有sort_index ???
+* drop 删除。
+
+<font color=#ff0000 size=5 face="黑体">未完成， 再看</font>
+
+## Pandas 基本操作
+[计算工具说明](https://pandas.pydata.org/docs/user_guide/computation.html#method-summary)
+
+
+## Pandas 分组聚合

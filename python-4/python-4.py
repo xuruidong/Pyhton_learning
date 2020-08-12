@@ -99,6 +99,43 @@ def pandas_adjust_test():
     print (ndf)
     ndf = df.loc[0:2]
     print (ndf)
+    print ('*' * 10)
+    
+    ndf = df[df['A'] > 4]
+    print (ndf)
+    ndf = df[(df['A'] > 3) & (df['C'] > 4)]
+    print (ndf)
+    
+    ndf = df.replace(4, 40)
+    print (ndf)
+    ndf = df.replace(np.nan, 100)
+    print (ndf)
+    ndf = df.replace([1, 2, 3], 200)
+    print (ndf)
+    # 多对多替换
+    df.replace({4:400,5:500,8:800})    
+    
+
+    ndf = df.sort_values(by=['A'], ascending=False)
+    print (ndf)
+    # 多列排序
+    df.sort_values(by=['A', 'C'], ascending=[True, False])
+
+    
+    # 删除
+    # 删除列
+    df.drop( 'A' ,axis = 1)
+    
+    # 删除行
+    df.drop( 3 ,axis = 0)
+    
+    # 删除特定行
+    df [  df['A'] < 4 ]
+    
+    
+    # 行列互换
+    df.T
+    df.T.T    
     
     
     
