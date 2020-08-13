@@ -138,8 +138,28 @@ def pandas_adjust_test():
     df.T.T    
     
     
-def xxx():
-    [{'a': 1, 'b': 2, 'c': 3, 'd': 4,}, {'a': 5, 'b': 6, 'c': 7, 'd': 8,}]
+def group_test():
+    data = [{'a': 1, 'b': 2, 'c': 3, 'd': 4, },
+     {'a': 5, 'b': 6, 'c': 7, 'd': 8, },
+     {'a': 1, 'b': 9, 'c': 7, 'd': 4, }, ]
+
+    df = pd.DataFrame(data)
+    print (data)
+    
+    ret = df.groupby('a')
+    print (type(ret))
+    print (ret.groups)
+
+    print ("------------")
+    print (ret.count())
+
+    print (ret.aggregate({'a': 'count', 'b': 'sum'}))
+
+    print ("*" * 20)
+    print (ret.agg("mean"))
+    print (ret.mean().to_dict())
+    print (ret.transform("mean"))
+    
     
 if __name__ == "__main__":
     # sklearn_test()
@@ -147,6 +167,7 @@ if __name__ == "__main__":
     # series_test()
     # DateFrame_test()
     # pre_proc_test()
-    pandas_adjust_test()
+    # pandas_adjust_test()
+    group_test()
     print ("===  end  ===")
     

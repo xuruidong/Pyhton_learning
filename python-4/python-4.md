@@ -145,10 +145,51 @@ def pre_proc_test():
 [计算工具说明](https://pandas.pydata.org/docs/user_guide/computation.html#method-summary)
 
 
-## Pandas 分组聚合
+## Pandas 分组和聚合
 数据集一般是列表嵌套字典的形式，如表格
 |a|b|c|d|
 |-|-|-|-|
 |1|2|3|4|
 |5|6|7|8|
-对应的形式为 `[{'a': 1, 'b': 2, 'c': 3, 'd': 4,}, {'a': 5, 'b': 6, 'c': 7, 'd': 8,}]`
+|1|9|7|4|
+对应的形式为 `[{'a': 1, 'b': 2, 'c': 3, 'd': 4,}, {'a': 5, 'b': 6, 'c': 7, 'd': 8,}, {'a': 1, 'b': 9, 'c': 7, 'd': 4, }]`
+
+
+```
+def group_test():
+    data = [{'a': 1, 'b': 2, 'c': 3, 'd': 4, },
+     {'a': 5, 'b': 6, 'c': 7, 'd': 8, },
+     {'a': 1, 'b': 9, 'c': 7, 'd': 4, }, ]
+
+    df = pd.DataFrame(data)
+    print (data)
+    
+    ret = df.groupby('a')
+    print (type(ret))
+    print (ret.groups)
+
+    print ("------------")
+    print (ret.count())
+
+    print (ret.aggregate({'a': 'count', 'b': 'sum'}))
+
+    print ("*" * 20)
+    print (ret.agg("mean"))
+    print (ret.mean().to_dict())
+    print (ret.transform("mean"))
+```
+
+* 通过groupby方法来进行分组，返回的是一个 pandas.core.groupby.generic.DataFrameGroupBy 对象， 通过属性 groups 来得到分组信息
+* count 方法用来统计数量
+* 分组后对某列进行求和  groupby().aggregate()
+* 分组后求平均值 groupby().aggregate(“mean”) 或者 groupby().mean()
+* 将处理结果转化为 dict  , to_dict()
+* transform 和 agg 的区别。在结果上， transform 不会按组合并
+
+
+### 数据透视表
+
+## Pandas 多表拼接
+
+## Pandas 输出和制图
+
