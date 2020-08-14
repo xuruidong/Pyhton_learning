@@ -1,4 +1,4 @@
-# python-4 Pandas
+# python-4 大徒弟名叫青头愣 二徒弟名叫愣头青
 
 ## pandas 简介
 
@@ -193,3 +193,34 @@ def group_test():
 
 ## Pandas 输出和制图
 
+### 输出
+* pandas 可以将处理的数据输出为 dict ,交给 Python 处理。也可以输出到文件。比如 excel(to_exvel()), 需要安装 pip install openpyxl
+* 输出到excel 时可以指定 sheet 名
+* 默认是添加索引的， 要去掉索引， 设置参数 `index=False`
+* 要导出指定的列， 设置参数 columns
+* 字符编码设置 encoding
+* 缺失值处理 na_rep
+* to_json(), to_csv(), to_hdf()......
+
+```
+def output_test():
+    data = [{'a': 1, 'b': 2, 'c': 3, 'd': 4, },
+     {'a': 5, 'b': 6, 'c': 7, 'd': 8, },
+     {'a': 1, 'b': 9, 'c': 7, 'd': 4, }, ]
+    
+    df = pd.DataFrame(data)
+    df.to_excel(excel_writer="aaa.xlsx", sheet_name="xxxx",
+                index=False, columns=['a', 'c'])
+```
+
+尽量使用内置函数
+
+### 绘图
+需要使用 matplotlib 库
+使用 matplotlib.pyplot， 指定横纵坐标，即可绘图
+
+
+<font color=#ff0000 size=5 face="黑体">导入库出错</font>
+
+
+## jieba 分词与提取关键词

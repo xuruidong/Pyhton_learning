@@ -160,6 +160,26 @@ def group_test():
     print (ret.mean().to_dict())
     print (ret.transform("mean"))
     
+
+def output_test():
+    data = [{'a': 1, 'b': 2, 'c': 3, 'd': 4, },
+     {'a': 5, 'b': 6, 'c': 7, 'd': 8, },
+     {'a': 1, 'b': 9, 'c': 7, 'd': 4, }, ]
+    
+    df = pd.DataFrame(data)
+    df.to_excel(excel_writer="aaa.xlsx", sheet_name="xxxx",
+                index=False, columns=['a', 'c'])
+    
+import matplotlib.pyplot as plt
+def draw_test():
+    dates = pd.date_range('20200101', periods=12)
+    df = pd.DataFrame(np.random.randn(12, 4),
+                      index=dates, columns=list('ABCD'))
+    print (df)
+
+    plt.plot(df.index, df['A'])
+    plt.show()
+    
     
 if __name__ == "__main__":
     # sklearn_test()
@@ -168,6 +188,8 @@ if __name__ == "__main__":
     # DateFrame_test()
     # pre_proc_test()
     # pandas_adjust_test()
-    group_test()
+    #group_test()
+    # output_test()
+    draw_test()
     print ("===  end  ===")
     

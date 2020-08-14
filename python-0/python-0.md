@@ -39,3 +39,7 @@ wing 中快速注释 Ctrl+.
 
 ### Python 魔术方法
 
+## 虚拟环境
+创建虚拟环境 python -m venv venv1  创建了一个名为 venv1 的虚拟环境
+进入虚拟环境  source venv1/bin/activate, windows 环境下 venv1\Scripts\activate.bat
+
