@@ -43,3 +43,15 @@ wing 中快速注释 Ctrl+.
 创建虚拟环境 python -m venv venv1  创建了一个名为 venv1 的虚拟环境
 进入虚拟环境  source venv1/bin/activate, windows 环境下 venv1\Scripts\activate.bat
 
+## 看文档
+看版本变化
+PEP 文档中有描述 功能的演进历史
+
+itertools
+functools
+
+
+github 搜索， in:readme  xxx
+
+康奈尔笔记法
+不要 “云学习”
