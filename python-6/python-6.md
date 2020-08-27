@@ -82,7 +82,7 @@ E:\LINUX\NOTE\PYTHON\PYTHON-6\DJANGO_TEST\MYDJANGO\INDEX
     └─__init__.py
 ```
 此时，该项目已经可以运行，显示Django的欢迎界面。
-$ python manage.py runserver
+$python manage.py runserver
 访问 http://127.0.0.1:8000/ 即可。默认开启DEBUG。
 如果需要修改端口或者服务IP， 加参数：
 $ python manage.py runserver 0.0.0.0:9000
@@ -137,7 +137,7 @@ URLconf
 * 一个或多个位置参数提供
 4. 如果没有URL被匹配，或者匹配过程中出现了异常，Django 会调用一个适当的错误处理视图。
 
-实现
+实现 访问http://127.0.0.1:8000 返回固定的字符串
 在urls.py中， urlpatterns=[] 
 ```
 urlpatterns = [
@@ -188,3 +188,43 @@ from MyPackage import Model1 as M
 
 如果在同级目录下存在包Pkg2
 在Module2.py中 `from .Pkg2 import xxx`
+
+
+## URL 匹配
+固定url匹配使用起来有局限性。Django 可以判断用户输入的url 类型，如数字，字符串。也支持正则表达式。还可以自定义匹配规则函数。
+
+### 带变量的URL
+Django 支持URL 设置变量，变量类型包括：
+* str
+* int
+* slug （备注）
+* uuid
+* path
+
+使用方法： path( <变量类型：变量名>, 处理函数 )
+`path('<int:year>', views.myyear)` 表示传入的参数会赋值给year变量，如果不是纯数字形式，会报错。url path 是整数时匹配。
+__Coding Time：__
+在index/urls.py 中，urlpatterns 中添加：
+```
+urlpatterns = [
+    path('', views.index),
+    path('<int:year>', views.year),
+]
+```
+在views.py中实现year函数：
+```
+def year(request, year):
+	return HttpResponse(year+1)
+```
+第一个参数必须是 request, 第二个参数只接收来的参数。
+如果访问的url path 不能匹配到 urlpatterns， 会返回 404.
+
+对于路径模式 path('<int:year>/<str:name>', views.name), name 函数要接收多个参数，可以使用 **kwargs 
+```
+def name(request, **kwargs):
+	print (kwargs)
+	return HttpResponse(kwargs['name'])
+```
+
+### 正则 URL
+使用正则表达式时，就不能用path函数了，要使用re_path. 
