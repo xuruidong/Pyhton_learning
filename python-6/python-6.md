@@ -228,3 +228,168 @@ def name(request, **kwargs):
 
 ### 正则 URL
 使用正则表达式时，就不能用path函数了，要使用re_path. 
+在urls.py中，增加
+```
+from django.urls import re_path
+
+urlpatterns = [
+    path('', views.index),
+    re_path('(?P<year>[0-9]{4}).html', views.re_year, name='urlyear')
+]
+```
+
+“?P” 表示后面跟着的是变量和其正则表达式。
+name 参数可以给path 绑定一个名词，可以让模板使用。
+
+在views.py中实现 re_year函数：
+```
+def re_year(request, year):
+	return render(request, 'yearview.html')
+```
+render可以让文件内容进行返回。
+在Templates 文件夹增加 yearview.html
+
+模板怎么配置？？？
+在settings.py中， TEMPLATES， APP_DIRS 为True， 表示在app路径下查找模板文件，默认模板名称是Templates
+
+### 自定义匹配规则
+使用自定义类型， 需要使用 register_converter 进行注册。比如自定义类型名为 myint, 
+```
+from django.urls import register_converter
+register_converter(IntConverter, 'myint') 
+```
+其中，IntConverter 是对应的转换类。
+我们将 IntConverter 类写到 converters.py 中，
+```
+class IntConverter():
+    regex = '[0-9]{4}'
+
+    def to_python(self, value):
+    	return int(value)
+
+    def to_url(self, value):
+    	return str(value)
+```
+类中必须实现三个部分， regex 是匹配的正则表达式，to_python 将从url获取到的值转到 python ， 
+
+views.py
+```
+def myint(request, year):
+	return HttpResponse(year+10)
+```
+
+## View视图
+Django 对用户请求进行处理，是将url 与view进行绑定，来处理请求。处理过程就是python 的一些逻辑，我们主要关注如何将处理结果进行返回。
+返回一般是两种， Response 和 Render。Render 是对Response的进一步封装。
+
+### Response
+|响应类型|说明|
+|-|-|
+|HttpResponse('Hello World!')|HTTP 200, 请求已被成功接收|
+|HttpResponseRedirect('/admin/')|HTTP 302,重定向admin站点的URL|
+|HttpResponsePermanentRedirect('/admin/')|HTTP 301, 永久重定向admin站点URL|
+|HttpRespinseBadRequest('BadRequest')|HTTP 400,访问页面不存在或请求错误|
+|HttpResponseNotFound('NotFound')|HTTP 404, 页面不存在或者网页的URL失效|
+|HttpResponseForbidden('NotFound')|HTTP 403, 没有访问权限|
+|HttpResponseNotAllowed('NotAllowedGet')|HTTP 405, 不允许使用该请求方式|
+|HttpResponseSeverError('ServerError')|HTTP 500, 服务器内容错误|
+
+如果要自定义错误界面，比如404页面，可以将'NotFound'字符串替换为HTML代码，进一步可以将HTML写成变量，还可以存成文件，---模板文件
+
+### 快捷函数
+render()
+将给定的模板与给定的上下文字典组合在一起，并以渲染的文本返回一个HttpResponse对象。
+将模板文件与view进行绑定。
+
+redirect()
+将一个HttpResponseRedirect返回到传递的参数的适当URL ？？？
+```
+def myint(request, year):
+	# return HttpResponse(year+10)
+	return redirect("http://www.baidu.com")
+```
+
+get_object_or_404()
+在给定的模型管理器（model manager)上调用get(), 但它会引发HTTP 404而不是模型的DoesNotExist异常。？？
+
+
+## ORM 创建数据表
+Django 的 model 一般做数据存储，增删改查等工作。一般不会直接操作数据库，而是使用ORM。
+
+### 模型与数据库
+* 每个模型都是一个Python 类，这些类继承 django.db.models.Model
+* 模型类的每个属性都相当于一个数据库的字段
+* Django 提供了一个自动生成访问数据库的API
+
+如何让模型类与数据库中的表进行关联？
+首先导入models
+`from django.db import models`
+编写模型类，继承自models.Model。
+指定字段， 如：
+```
+class Person(models.Model):
+    id = models.IntegerField(Primary_key=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+```
+id设置为整数，约束条件为主键，first_name 和last_name设置为字符类型，约束条件为指定最大长度是30.
+对应的SQL为：
+```
+CREATE TABLE myapp_person( "id" serial NOT NULL PRIMARY KEY,
+    "first_name" varchar(30) NOT NULL,
+    "last_name" varchar(30) NOT NULL
+    );
+```
+其中myapp 是应用的名称。
+
+将类转为SQL语句：
+python  manage.py  makemigrations 生成中间脚本
+python  manage.py  migrate  将中间脚本生成SQL
+
+实例:
+在index/models.py中,
+```
+from django.db import models
+
+# Create your models here.
+# 图书or电影
+class Type(models.Model):
+    # id = models.AutoField(primary_key=True)  # Django会自动创建,并设置为主键
+    typename = models.CharField(max_length=20)
+
+# 作品名称和作者(主演)
+class Name(models.Model):
+    # id 自动创建
+    name = models.CharField(max_length=50)
+    author = models.CharField(max_length=50)
+    stars = models.CharField(max_length=10)
+```
+创建两张表 type 和 name 。Django会自动创建自增id 字段，并设置为主键。
+在settings.py中将数据库相关设置改为MYSQL相关配置。
+执行  报错 
+1. ModuleNotFoundError: No module named 'MySQLdb'
+django.core.exceptions.ImproperlyConfigured: Error loading MySQLdb module.
+Did you install mysqlclient?
+解决方法：
+在 `MyDjango/__init__.py`中添加
+```
+import pymysql 
+pymysql.install_as_MySQLdb()
+```
+2.  File "D:\Program Files\Python\Python37\lib\site-packages\django\db\backends\mysql\operations.py", line 146, in last_executed_query
+    query = query.decode(errors='replace')
+AttributeError: 'str' object has no attribute 'decode'
+注释掉相关代码。
+
+3. 提示 No changes detected
+没解决
+
+执行成功后，会在index/migrations下生成中间脚本。
+
+。。。
+
+## ORM API
+...
+
+## 模板
+模板将前端展示的部分提取出来，并且可以和Django进行交互。
