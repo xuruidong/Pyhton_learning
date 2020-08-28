@@ -82,7 +82,7 @@ E:\LINUX\NOTE\PYTHON\PYTHON-6\DJANGO_TEST\MYDJANGO\INDEX
     └─__init__.py
 ```
 此时，该项目已经可以运行，显示Django的欢迎界面。
-$python manage.py runserver
+python manage.py runserver
 访问 http://127.0.0.1:8000/ 即可。默认开启DEBUG。
 如果需要修改端口或者服务IP， 加参数：
 $ python manage.py runserver 0.0.0.0:9000
@@ -133,9 +133,14 @@ URLconf
 1. 如果传入 HTTPRequest 对象拥有urlconf属性（通过中间件设置），它的值将被用来代替ROOT_URLCONF设置。
 2. Django 加载 URLconf 模块并寻找可用的urlpatterns， Django 依次匹配每个URL模式，在与请求的URL匹配的第一个模式停下来。
 3. 一旦有URL匹配成功，Django导入并调用相关的视图，视图会获得如下参数：
-* 一个 HTTPRequest 实例
-* 一个或多个位置参数提供
-4. 如果没有URL被匹配，或者匹配过程中出现了异常，Django 会调用一个适当的错误处理视图。
+   * 一个 HTTPRequest 实例
+   * 一个或多个位置参数提供
+1. 如果没有URL被匹配，或者匹配过程中出现了异常，Django 会调用一个适当的错误处理视图。
+
+### path()函数
+Django path() 可以接收四个参数，分别是两个必选参数：route、view 和两个可选参数：kwargs、name。
+`path(route, view, kwargs=None, name=None)`
+
 
 实现 访问http://127.0.0.1:8000 返回固定的字符串
 在urls.py中， urlpatterns=[] 
@@ -144,6 +149,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 ```
+
+
 path函数第一个参数是请求的http://127.0.0.1:8000/admin， 返回admin.site.urls ？？？ 没懂！！！
 如果路径不在项目中，而是在app中，除了使用path来做路径和视图的匹配关系外, 还可以通过 include 来导入应用程序，如：
 `path('', include('index.urls'))`,当访问 http://127.0.0.1:8000 时，就会找index 下的urls.py文件。
@@ -249,8 +256,10 @@ def re_year(request, year):
 render可以让文件内容进行返回。
 在Templates 文件夹增加 yearview.html
 
-模板怎么配置？？？
-在settings.py中， TEMPLATES， APP_DIRS 为True， 表示在app路径下查找模板文件，默认模板名称是Templates
+__模板怎么配置？__
+在settings.py中， TEMPLATES， APP_DIRS 为True， 表示在app路径下查找模板文件，默认模板名称是Templates。
+如果在 INSTALLED_APPS 中注册了应用，并且 TEMPLATES， APP_DIRS 为True, 则可以在app中查找到。
+如果没有在INSTALLED_APPS 中注册应用， 则需要在 TEMPLATES，DIRS 中设置模板路径， 'DIRS': [BASE_DIR+"/index/Templates"]
 
 ### 自定义匹配规则
 使用自定义类型， 需要使用 register_converter 进行注册。比如自定义类型名为 myint, 
@@ -288,7 +297,7 @@ Django 对用户请求进行处理，是将url 与view进行绑定，来处理�
 |HttpResponse('Hello World!')|HTTP 200, 请求已被成功接收|
 |HttpResponseRedirect('/admin/')|HTTP 302,重定向admin站点的URL|
 |HttpResponsePermanentRedirect('/admin/')|HTTP 301, 永久重定向admin站点URL|
-|HttpRespinseBadRequest('BadRequest')|HTTP 400,访问页面不存在或请求错误|
+|HttpResponseBadRequest('BadRequest')|HTTP 400,访问页面不存在或请求错误|
 |HttpResponseNotFound('NotFound')|HTTP 404, 页面不存在或者网页的URL失效|
 |HttpResponseForbidden('NotFound')|HTTP 403, 没有访问权限|
 |HttpResponseNotAllowed('NotAllowedGet')|HTTP 405, 不允许使用该请求方式|
@@ -393,3 +402,26 @@ AttributeError: 'str' object has no attribute 'decode'
 
 ## 模板
 模板将前端展示的部分提取出来，并且可以和Django进行交互。
+Django 如何与模板进行交互？可以使用Django自带的模板语言。模板语言在模板中定义了一些变量以及其他的一些功能。
+
+### 模板变量
+* 模板变量{{ variables }} : 普通模板变量，使用{{}}将变量名括起来，变量名通过view将参数传递到模板，模板通过这种方式获取变量。
+* 从URL中获取模板变量 {% url 'urlyear' 2020 %} ：将2020传递到名为urlyear 的url中
+* 读取静态资源内容 {% static "class/header.css" %}
+* for 遍历标签 {% for type in type_list %}{% endfor %}
+* if 判断标签 {% if name.type==type.type %}{% endif %}
+
+```
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div><a href="/2020.html">2020 booklist</a></div>
+<div><a href="{% url 'urlyear' 2020 %}">2020 booklist</a></div>
+</body>
+```
+对于 `<div><a href="{% url 'urlyear' 2020 %}">2020 booklist</a></div>`, Django 先找到名为 urlyear 的url, (在index/urls.py中绑定)，然后将参数2020传递给这个url, 此时这个url 相当于是 http://127.0.0.1:8000/2020
+
+## 使用模板展示数据库中的内容
