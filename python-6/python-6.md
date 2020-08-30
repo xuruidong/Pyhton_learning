@@ -306,11 +306,11 @@ Django 对用户请求进行处理，是将url 与view进行绑定，来处理�
 如果要自定义错误界面，比如404页面，可以将'NotFound'字符串替换为HTML代码，进一步可以将HTML写成变量，还可以存成文件，---模板文件
 
 ### 快捷函数
-render()
+#### render()
 将给定的模板与给定的上下文字典组合在一起，并以渲染的文本返回一个HttpResponse对象。
 将模板文件与view进行绑定。
 
-redirect()
+#### redirect()
 将一个HttpResponseRedirect返回到传递的参数的适当URL ？？？
 ```
 def myint(request, year):
@@ -318,7 +318,7 @@ def myint(request, year):
 	return redirect("http://www.baidu.com")
 ```
 
-get_object_or_404()
+#### get_object_or_404()
 在给定的模型管理器（model manager)上调用get(), 但它会引发HTTP 404而不是模型的DoesNotExist异常。？？
 
 
@@ -355,7 +355,7 @@ CREATE TABLE myapp_person( "id" serial NOT NULL PRIMARY KEY,
 python  manage.py  makemigrations 生成中间脚本
 python  manage.py  migrate  将中间脚本生成SQL
 
-实例:
+#### 实例:
 在index/models.py中,
 ```
 from django.db import models
@@ -373,9 +373,10 @@ class Name(models.Model):
     author = models.CharField(max_length=50)
     stars = models.CharField(max_length=10)
 ```
-创建两张表 type 和 name 。Django会自动创建自增id 字段，并设置为主键。
+创建两张表 type 和 name 。Django会自动创建自增id 字段，并设置为主键。  
 在settings.py中将数据库相关设置改为MYSQL相关配置。
-执行  报错 
+
+执行 python manage.py makemigrations 报错 
 1. ModuleNotFoundError: No module named 'MySQLdb'
 django.core.exceptions.ImproperlyConfigured: Error loading MySQLdb module.
 Did you install mysqlclient?
@@ -391,14 +392,55 @@ AttributeError: 'str' object has no attribute 'decode'
 注释掉相关代码。
 
 3. 提示 No changes detected
-没解决
+在 INSTALLED_APPS 中注册自己写的APP，
 
-执行成功后，会在index/migrations下生成中间脚本。
 
-。。。
+执行成功后，会在index/migrations下生成中间脚本0001_initial.py。  
+然后执行 python manage.py migrate. 执行成功后会在数据库中生存一系列表。
+
+
 
 ## ORM API
-...
+在[Django Documentation](https://docs.djangoproject.com/zh-hans/2.2/) 的模型层--模型--[字段类型](https://docs.djangoproject.com/zh-hans/2.2/ref/models/fields/) 可以查看字段选项和字段类型。  
+比如 AutoField，BigAutoField， 浮点型，字符串，日期等等。  
+字段选项：字段是否可以为空 等
+
+### 利用 Django Shell 进行 ORM 操作
+执行 python  manage.y shell 进入Django Shell  
+在这里可以使用Pyhton 的语句、库，
+创建一个model的启动记录 ？？？
+导入 model `form index.models import *`, 之后就可以使用 index/models.py 中的类（Type 和 Name）。然后创建 Name 对象，设置属性，保存：
+```
+n = Name()
+n.name = "aaa"
+n.author = "bbb"
+n.stars = 100
+n.save()
+```
+这样就通过ORM方式将数据写入到数据库中。
+
+此外，还可以使用 ORM 的 API 来进行操作：
+```
+Name.objects.create(name='AAA', author='BBB', stars=200)
+Name.objects.get(id=1).name
+Name.objects.filter(id=1).update(name='kkk')
+Name.objects.filter(id=2).delete()
+```
+Django.db.models.Model 中有使用oobjects 方法， create 相当于 insert; get查找 select, filter--- update , 全部删除 all().delete()
+
+其他查询方法：
+```
+objects.all()[1].name
+n = Name.objects.all()
+n[1].name
+n[0].name
+
+Name.objects.values_list('name')
+n = Name.objects.filter(name='kkk')
+```
+values_list 返回 QuerySet,可以通过下标方式取值。
+filter 支持更多的条件。  
+这些操作经常在views.py中使用。在操作函数中对数据进行操作，返回给客户端
 
 ## 模板
 模板将前端展示的部分提取出来，并且可以和Django进行交互。
@@ -425,3 +467,38 @@ Django 如何与模板进行交互？可以使用Django自带的模板语言。�
 对于 `<div><a href="{% url 'urlyear' 2020 %}">2020 booklist</a></div>`, Django 先找到名为 urlyear 的url, (在index/urls.py中绑定)，然后将参数2020传递给这个url, 此时这个url 相当于是 http://127.0.0.1:8000/2020
 
 ## 使用模板展示数据库中的内容
+流程：  
+当浏览器发起请求， http://127.0.0.1:8000/books 时， runserver.py 接收到请求，用 urls.py中的urlpattern 对url 进行匹配。匹配到自己实现的应用 index, 然后会去index/urls.py 中继续匹配。  
+然后会去index/views.py 中相应的处理函数中处理。  
+```
+from .models import Name
+def books(request):
+    n = Name.objects.all()
+    return render(request, 'bookslist.html', locals())
+```
+books函数中，使用ORM 方式获取了Name表中的所有数据，使用render 使用local() 将函数内的局部变量，传递给bookslist.html， 将模板中bookslist.html 的内容返回。 
+
+在bookslist.html中，
+```
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>BooksList</title>
+</head>
+<body>
+
+{% for book in n %}
+    <div>bookname: {{ book.name }}   <br>
+           author: {{ book.author }} <br>
+           stars:  {{ book.stars }}  
+    </div>
+{% endfor %}
+</body>
+```
+
+## urlconf与models配置
+
+通过MySQL 生成model
+python manage.py inspectdb
+将数据库中表结构转换成模型。
+元数据，class Meta,  中的数据不属于数据库中的字段，managed=False， 当执行makemigration等操作时，会忽略该表。db_table 可以用来指定表名。
