@@ -25,7 +25,15 @@ def class_test():
     print(id(h2))
     print(h1.__class__)
     print(h2.__class__)
-    
+
+    Human.newattr = 1
+    setattr(Human, 'attr2', 'value')
+    print("Human.__dict__: %s" % Human.__dict__)
+
+    # setattr(list, 'attr2', 'value')
+    print ([].__class__)
+    print (type(()))
+    print ( ().__class__.__bases__[0].__subclasses__() )
 
 class obj(object):
     def __init__(self, *args, **kwargs):

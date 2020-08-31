@@ -60,7 +60,7 @@ h1.live=False
 h1.__dict__: {'name': 'aaa', 'live': False}
 h2.__dict__: {'name': 'bbb'}
 ```
-* 通过`__dict__` 可以查看类或者对象的数据属性。
+* 通过`__dict__` 可以查看类或者对象的数据属性。dir() 也可以，返回形式为list
 * 如果用对象去访问类变量，可以获取到类属性的值。如果对象引用了一个不存在的属性，则会自动创建该属性。
 * 可以使用 id()， `__class__`来区别对象
 ```
@@ -76,3 +76,39 @@ c = MyFirstClass
 d = c()
 d.__class__()
 ```
+### 增加属性
+* 直接赋值引用，可以为类增加静态属性
+`Human.newattr = 1`
+* 使用函数 setattr  
+  `setattr(Human, 'attr2', 'value')`
+* 内置类型不能增加属性和方法  
+`setattr(list, 'attr2', 'value')`
+`builtins.TypeError: can't set attributes of built-in/extension type 'list'`
+
+### 属性的作用域
+* 形如_attr 的变量，叫人为不可修改变量，变量可见，但约定不去修改。
+* 形如__attr的属性, 是私有属性，Python 会对其自动改名，方式其他人对其修改。但也是可以访问的，但不建议访问。
+* 形如__attr__的属性, 是魔术方法，不会被自动改名。
+
+### 显示object类所有子类  
+[] ---> list类  
+() ---> tuple类  
+```
+print( type( () ) )
+<class 'tuple'>
+```
+获取tuple类的父类  
+```
+().__class__.__bases__
+```
+此时的返回结果是一个元组，我们取第一个值[0]
+获取object 类的所有子类：  
+```
+().__class__.__bases__[0].__subclasses__()
+```
+
+## 类方法
+分三类：  
+普通方法，或者称为实例方法。 需要self 参数，表示该方法的对象  
+类方法：增加了classmethod语法糖的方法。需要cls 参数，表示该方法的类   
+静态方法： 增加了 staticmethod 语法糖的方法。由类调用，无self 或 cls 参数。
