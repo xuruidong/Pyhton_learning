@@ -112,3 +112,31 @@ print( type( () ) )
 普通方法，或者称为实例方法。 需要self 参数，表示该方法的对象  
 类方法：增加了classmethod语法糖的方法。需要cls 参数，表示该方法的类   
 静态方法： 增加了 staticmethod 语法糖的方法。由类调用，无self 或 cls 参数。
+
+### 类方法
+#### 类方法调用
+```
+class obj(object):
+    val = 1
+    def __init__(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def class_func(cls, arg):
+        print("in class_func, arg=%s, val=%d" % (arg, cls.val))
+
+def class_method_test():
+    obj.class_func("hahaha")
+```
+输出：
+`in class_func, arg=hahaha`
+
+* 不需要对类进行实例化就可以调用类方法。
+* 类方法可以使用类变量
+* 魔术方法 `__name__` 在类中是类名
+* 类方法是`<bound method obj.class_func of <class '__main__.obj'>>`
+  [描述器使用指南](https://docs.python.org/zh-cn/3.8/howto/descriptor.html)
+* `__init__()`是初始化函数，`__new__()`是构造函数
+
+当类实例化后，使用对象调用类方法，
+14：40
