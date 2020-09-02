@@ -134,9 +134,114 @@ def class_method_test():
 * 不需要对类进行实例化就可以调用类方法。
 * 类方法可以使用类变量
 * 魔术方法 `__name__` 在类中是类名
-* 类方法是`<bound method obj.class_func of <class '__main__.obj'>>`
-  [描述器使用指南](https://docs.python.org/zh-cn/3.8/howto/descriptor.html)
+* 类方法是`<bound method obj.class_func of <class '__main__.obj'>>`， 查看类方法描述器
 * `__init__()`是初始化函数，`__new__()`是构造函数
 
-当类实例化后，使用对象调用类方法，
-14：40
+#### 类方法描述器
+[描述器使用指南](https://docs.python.org/zh-cn/3.8/howto/descriptor.html)
+当类实例化后，也可以使用对象调用类方法。 在对象的`__dict__`中，是看不到类方法的，此时，实例对象会自动去自己所属的类中的`__dict__`中查找。
+
+#### 在什么情况下使用类方法
+##### 模拟实现构造函数
+例如，现有如下类：
+```
+class Kls2():
+    def __init__(self, fname, lname):
+        self.fname = fname
+        self.lname = lname
+    
+    def print_name(self):
+        print(f'first name is {self.fname}')
+        print(f'last name is {self.lname}')
+```
+进行实例化时，需要传入两个参数。当我们需要传入其他形式的参数来进行实例化时，有如下三种解决办法：
+* 修改`__init__()`
+* 增加`__new__()`构造函数
+* 增加预处理函数
+
+```
+def pre_name(obj,name):
+    fname, lname = name.split('-')
+    return obj(fname, lname)
+
+me2 = pre_name(Kls2, 'aaa-bbb')
+me2.print_name()
+```
+pre_name 返回的是一个 Kls2 对象。
+
+我们将 pre_name 写到 Kls2 中：
+```
+class Kls3():
+    def __init__(self, fname, lname):
+        self.fname = fname
+        self.lname = lname
+    
+    @classmethod
+    def pre_name(cls,name):
+        fname, lname = name.split('-')
+        return cls(fname, lname)
+    
+    def print_name(self):
+        print(f'first name is {self.fname}')
+        print(f'last name is {self.lname}')
+    
+me3 = Kls3.pre_name('aaa-bbb')
+me3.print_name()
+```
+pre_name 成为了Kls3 的类方法。
+
+##### 这叫什么？
+对象引用classmethod时，如果`__dict__`中不存在，会去自己所属类中找，如果所属类中也没有，会去父类中找。
+```
+class Fruit(object):
+    total = 0
+
+    @classmethod
+    def print_total(cls):
+        print(cls.total)
+        print(id(Fruit.total))
+        print(id(cls.total))
+
+    @classmethod
+    def set(cls, value):
+        print(f'calling {cls} ,{value}')
+        cls.total = value
+
+class Apple(Fruit):
+    pass
+
+class Orange(Fruit):
+    pass
+```
+当调用Apple.print_total时，会在Fruit 中找print_total。
+
+```
+Apple.set(100)
+# calling <class '__main__.Apple'> ,100
+Orange.set(200)
+# calling <class '__main__.Orange'> ,200
+org=Orange()
+org.set(300)
+# calling <class '__main__.Orange'> ,300
+Apple.print_total()
+# 100
+# 140735711069824
+# 140735711073024
+Orange.print_total() 
+# 300
+# 140735711069824
+# 1998089714064
+```
+不知道用在什么地方？？？
+
+
+### 静态方法
+静态方法可以由类直接调用
+不能使用类和对象的属性
+
+## 描述器高级应用__getattribute__
+属性的处理
+在类中，需要对实例获取属性这一行为进行操作，可以使用：
+* `__getattribute__()`
+* `__getattr__()`
+
