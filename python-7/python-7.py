@@ -63,7 +63,8 @@ def class_method_test():
     o1.val = 100
     print(o1.__dict__)
     print(o1.get_val())
-    print (obj.__dict__)
+    print(obj.__dict__)
+    print(o1.aaa)
     
 if __name__ == "__main__":
     # class_test()
