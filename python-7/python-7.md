@@ -239,14 +239,144 @@ Orange.print_total()
 静态方法可以由类直接调用
 不能使用类和对象的属性
 
-## 描述器高级应用__getattribute__
+## 描述器高级应用
 类实例属性描述符。比如在获取属性时，如果属性不存在，会抛出AttributeError异常。如果想拦截异常，可以使用try-except。AttributeError异常是由`__getattribute__`产生的，可以在这里改变获取属性时的行为。
 ### 属性的处理
 在类中，需要对**实例**获取属性这一行为进行操作，可以使用：
 * `__getattribute__()`
 * `__getattr__()`
+可以理解为，这两个方法可以拦截获取属性的过程。
 
 两个方法的异同点：
 * `__getattr__()`适用于未定义的属性
 * `__getattribute__()`对所有属性的访问都会调用该方法
+
+### __getattribute__
+```
+def getattribute_test():
+    class Human(object):
+        def __init__(self, *args, **kwargs):
+            self.name = args[0]
+            print(args[0])
+            print ("init %s" % self.name)
+
+        
+        def __getattribute__(self, item):
+            print(f"call getattribute, %s" % item)
+        
+        
+    h = Human("Tom")
+    print(h.name)
+    print(h.age)
+```
+输出结果：
+```
+Tom
+call getattribute, name
+init None
+call getattribute, name
+None
+call getattribute, age
+None
+```
+* 在获取属性使，执行了`__getattribute__`中的print。
+* 如果显示实现了`__getattribute__`，获取已定义属性和未定义属性，都会调用`__getattribute__`。
+* item参数是被获取的属性的名字
+* 获取不存在的属性时，没有像默认行为那样抛出异常。因为`__getattribute__`被重载。
+* `self.name = args[0]` 并没有设置成功，并且其他地方的获取属性行为，也没有得到正确的值。因为`__getattribute__`没有返回值。
+
+```
+def getattribute_test():
+    class Human(object):
+        def __init__(self, *args, **kwargs):
+            self.name = args[0]
+            print(args[0])
+            print ("init %s" % self.name)
+
+        
+        def __getattribute__(self, item):
+            print(f"call getattribute, %s" % item)
+            return super().__getattribute__(item)
+        
+        
+    h = Human("Tom")
+    print(h.name)
+    print(h.age)
+```
+* `self.name = args[0]` 设置成功
+* 获取未定义属性时， 在`return super().__getattribute__(item)`抛出异常
+* super()表示当前实例所属类的父类
+
+```
+class Human(object):
+    def __init__(self, *args, **kwargs):
+        self.name = args[0]
+        print(args[0])
+        print ("init %s" % self.name)
+
+    
+    def __getattribute__(self, item):
+        print(f"call getattribute, %s" % item)
+        try:
+            return super().__getattribute__(item)
+        except:
+            self.__dict__[item] = 100
+            return 100
+```
+实例中的属性会被注册到`__dict__`中，所以当出现获取未定义属性时，在dict中进行注册，赋予默认值并返回。这样来修改默认的抛异常行为。
+
+### __getattr__
+
+```
+def getattribute_test():
+    class Human(object):
+        def __init__(self, *args, **kwargs):
+            self.name = args[0]
+            print(args[0])
+            print ("init %s" % self.name)
+
+        def __getattr__(self, item):
+            print(f"call getattribute, %s" % item)
+            return "ok"
+
+        
+    h = Human("Tom")
+    print(h.name)
+    print(h.age)
+```
+输出结果：
+```
+Tom
+init Tom
+Tom
+call getattribute, age
+ok
+```
+* 只有在获取未定义属性时才会调用`__getattr__`
+
+同时存在`__getattr__`和`__getattribute__`的情况
+```
+class Human(object):
+    def __init__(self, *args, **kwargs):
+        self.name = args[0]
+        print(args[0])
+
+    def __getattr__(self, item):
+        print(f"call getattr, %s" % item)
+        # return super().__getattr__(item)
+        
+    
+    def __getattribute__(self, item):
+        print(f"call getattribute, %s" % item)
+        # return super().__getattribute__(item)
+```
+* 先执行`__getattribute__`
+* 如果在`__getattribute__` 中返回 `return super().__getattribute__(item)`,会再执行`__getattr__`
+* object类中没有 `__getattr__`
+
+## 描述器
+描述器就是实现特定协议（描述符）的类。`__getattr__`和`__getattribute__`就是描述器协议的一个高层实现。 
+
+### 属性描述符property
+property 类需要实现 `__get__, __set__, __delete__` 方法。
 

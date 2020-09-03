@@ -65,8 +65,43 @@ def class_method_test():
     print(o1.get_val())
     print(obj.__dict__)
     print(o1.aaa)
-    
+
+def getattribute_test():
+    class Human(object):
+        def __init__(self, *args, **kwargs):
+            self.name = args[0]
+            print(args[0])
+
+        def __getattr__(self, item):
+            print(f"call getattr, %s" % item)
+            # return super().__getattr__(item)
+            
+        
+        def __getattribute__(self, item):
+            print(f"call getattribute, %s" % item)
+            # return super().__getattribute__(item)
+        
+        
+    h = Human("Tom")
+    # print(h.name)
+    print(h.age)
+
+        
+
+def property_test():
+    class Teacher:
+        def __init__(self, name):
+            self.name = name
+
+        def __get__(self):
+            return self.name
+
+        def __set__(self, value):
+            self.name = value
+
+            
 if __name__ == "__main__":
     # class_test()
-    class_method_test()
+    # class_method_test()
+    getattribute_test()
     print("===== end =====")
