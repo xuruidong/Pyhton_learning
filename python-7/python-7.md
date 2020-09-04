@@ -375,8 +375,123 @@ class Human(object):
 * object类中没有 `__getattr__`
 
 ## 描述器
-描述器就是实现特定协议（描述符）的类。`__getattr__`和`__getattribute__`就是描述器协议的一个高层实现。 
+描述器就是实现特定协议（描述符）的类。只要类里有 `__get__()` 、 `__set__()` 、和`__delete__()` 方法的其中一个，就称为类为描述符，它能实现对多个属性运用相同存取逻辑的一种方式。 `__getattr__`和`__getattribute__`就是描述器协议的一个高层实现。 
 
-### 属性描述符property
+```
+def property_test():
+    class Teacher:
+        def __init__(self, name):
+            self.name = name
+
+        def __get__(self, instance, owner):
+            print ("get")
+            return self.name
+
+        def __set__(self, instance, value):
+            print ("set ")
+            self.name = value
+
+        def __delete__(self, instance):
+            print("__delete__")
+
+    class Cls(object):
+        t = Teacher("aaa")
+        
+    c = Cls()
+    c.t
+    print("~" * 20)
+    c.t = "BBB"
+    print("-" * 20)
+    print (c.t)
+```
+输出结果：
+```
+get
+~~~~~~~~~~~~~~~~~~~~
+set 
+--------------------
+get
+BBB
+```
+* 获取属性时，会执行`__get__()`
+* 设置属性时，会执行`__set__()`
+* 如果一个类同时定义了 `__get__` 方法和 `__set__` 方法，则称之为数据描述符
+* 如果只有 `__get__` 方法，则称之为非数据描述符
+
+
+### 使用属性类型创建描述符
 property 类需要实现 `__get__, __set__, __delete__` 方法。
+除了使用类当作一个属性描述符，我们还可以使用 property()，就是可以轻松地为任意属性创建可用的描述符。创建 property() 的语法是 `property(fget=None, fset=None, fdel=None, doc=None)`
+
+在Django中，
+```
+class Model(metaclass=ModelBase):
+    def _get_pk_val(self, meta=None):
+        meta = meta or self._meta
+        return getattr(self, meta.pk.attname)
+
+    def _set_pk_val(self, value):
+        return setattr(self, self._meta.pk.attname, value)
+
+    pk = property(_get_pk_val, _set_pk_val)
+```
+当获取pk属性时会调用`_get_pk_val`, 当设置pk属性时，会调用`_set_pk_val`
+示例：
+```
+class Cls(object):
+
+    def _get_pk_val(self, meta=None):
+        print("_get_pk_val")
+        return self.v
+
+    def _set_pk_val(self, value):
+        print("_set_pk_val")
+        self.v = value
+
+    pk = property(_get_pk_val, _set_pk_val) 
+
+c.pk = 200
+print (c.pk)
+```
+输出：
+```
+_set_pk_val
+_get_pk_val
+200
+```
+
+### property装饰器
+
+使用`@property`将方法封装成属性。
+**为什么要这么做？**
+在获取属性和设置属性时，可进行一些操作.如判断赋值范围等。
+
+```
+def property_test2():
+    class Rectangle(object):
+        @property
+        def width(self):
+            #变量名不与方法名重复，改为true_width，下同
+            return self.__width
+
+        @width.setter
+        def width(self, value):
+            self.__width = value
+            
+        @property
+        def height(self):
+            return self.true_height
+
+        @height.setter
+        def height(self, value):
+            self.true_height = value
+            
+    s = Rectangle()
+    #与方法名一致
+    s.width = 1024
+    # print (s.__width) # builtins.AttributeError: 'Rectangle' object has no attribute '__width'
+    s.height = 768
+    print(s.width,s.height)
+```
+
 

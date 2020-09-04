@@ -93,15 +93,73 @@ def property_test():
         def __init__(self, name):
             self.name = name
 
-        def __get__(self):
+        def __get__(self, instance, owner):
+            print ("get")
             return self.name
 
-        def __set__(self, value):
+        def __set__(self, instance, value):
+            print ("set ")
             self.name = value
 
+        def __delete__(self, instance):
+            print("__delete__")
+
+    class Cls(object):
+        t = Teacher("aaa")
+
+        def _get_pk_val(self, meta=None):
+            print("_get_pk_val")
+            return self.v
+    
+        def _set_pk_val(self, value):
+            print("_set_pk_val")
+            self.v = value
+
+        pk = property(_get_pk_val, _set_pk_val)        
+        
+        
+        
+    c = Cls()
+    c.t
+    print("~" * 20)
+    c.t = "BBB"
+    print("-" * 20)
+    print (c.t)
+    
+    c.pk = 200
+    print (c.pk)
+
+
+def property_test2():
+    class Rectangle(object):
+        @property
+        def width(self):
+            #变量名不与方法名重复，改为true_width，下同
+            return self.__width
+
+        @width.setter
+        def width(self, value):
+            self.__width = value
+            
+        @property
+        def height(self):
+            return self.true_height
+
+        @height.setter
+        def height(self, value):
+            self.true_height = value
+            
+    s = Rectangle()
+    #与方法名一致
+    s.width = 1024
+    print (s.__width)
+    s.height = 768
+    print(s.width,s.height)    
             
 if __name__ == "__main__":
     # class_test()
     # class_method_test()
-    getattribute_test()
+    # getattribute_test()
+    # property_test()
+    property_test2()
     print("===== end =====")
