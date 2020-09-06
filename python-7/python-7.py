@@ -152,14 +152,52 @@ def property_test2():
     s = Rectangle()
     #与方法名一致
     s.width = 1024
-    print (s.__width)
+    # print (s.__width) # builtins.AttributeError: 'Rectangle' object has no attribute '__width'
     s.height = 768
     print(s.width,s.height)    
-            
+
+
+# 父类
+class People(object):
+    def __init__(self):
+        self.gene = 'XY'
+    def walk(self):
+        print('I can walk')
+
+# 子类
+class Man(People):
+    def __init__(self,name):
+        self.name = name
+    def work(self):
+        print('work hard')
+
+class Woman(People):
+    def __init__(self, name):
+        self.name = name
+    def shopping(self):
+        print('buy buy buy')
+
+class Son(Man, Woman):
+    def __init__(self,name):
+        self.name = name
+        
+def test():
+    p1 = Man('Adam')
+    p2 = Woman('Eve')
+    p3 = Son("sss")
+    #print (p3.__dict__)
+    p3.shopping()
+    p3.walk()
+    p3.work()
+
 if __name__ == "__main__":
     # class_test()
     # class_method_test()
     # getattribute_test()
     # property_test()
-    property_test2()
+    # property_test2()
+    test()
+    
+    print("object:", object.__class__, object.__base__)
+    print("type:", type.__class__, type.__base__)
     print("===== end =====")

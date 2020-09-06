@@ -465,6 +465,7 @@ _get_pk_val
 使用`@property`将方法封装成属性。
 **为什么要这么做？**
 在获取属性和设置属性时，可进行一些操作.如判断赋值范围等。
+比如，我想在类中有一个私有变量xxx，不让用户随便访问，所以变量名前面两个`_`, 即`__xxx`, 然后给用户暴露两个方法`get_xxx()`,`set_xxx()`， 在设置值时进行一些判断操作等。实现没问题，但在Python中显得不够优雅。
 
 ```
 def property_test2():
@@ -494,4 +495,196 @@ def property_test2():
     print(s.width,s.height)
 ```
 
+#### property的实现
+```
+# property 纯python实现
+
+class Property(object):
+    "Emulate PyProperty_Type() in Objects/descrobject.c"
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        self.fget = fget
+        self.fset = fset
+        self.fdel = fdel
+        if doc is None and fget is not None:
+            doc = fget.__doc__
+            self.__doc__ = doc
+    
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+        if self.fget is None:
+            raise AttributeError("unreadable attribute")
+        return self.fget(obj)
+
+    def __set__(self, obj, value):
+        if self.fset is None:
+            raise AttributeError("can't set attribute")
+        self.fset(obj, value)
+
+    def __delete__(self, obj):
+        if self.fdel is None:
+            raise AttributeError("can't delete attribute")
+        self.fdel(obj)
+
+    def getter(self, fget):
+        return type(self)(fget, self.fset, self.fdel, self.__doc__)
+
+    def setter(self, fset):
+        return type(self)(self.fget, fset, self.fdel, self.__doc__)
+
+    def deleter(self, fdel):
+        return type(self)(self.fget, self.fset, fdel, self.__doc__)
+```
+
+#### demo
+```
+#ORM(flask.ext.sqlalchemy)
+# 一个表记录一个节点的心跳更新
+# 通过一个属性来获取节点是否可用，而不用写复杂的查询语句
+class Node(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    updated_at = db.Column(db.DateTime) # 节点最后心跳时间
+    state = db.Column(db.Integer, nullable=False) # 节点是否禁用
+
+    @property
+    def is_active(self):
+        if(datetime.datetime.now() - self.updated_at).secondes > 60 \
+            and self.vm_state == 0:
+            return False
+        return True
+```
+
+```
+# 限制传入的类型和范围（整数，且满足18-65）
+class Age(object):
+    def __init__(self, default_age = 18):
+        self.age_range = range(18,66)
+        self.default_age = default_age
+        self.data = {}
+
+    def __get__(self, instance, owner):
+        return self.data.get(instance, self.default_age)
+    
+    def __set__(self, isinstance, value):
+        if value not in self.age_range:
+            raise ValueError('must be in (18-65)')
+
+        self.data[isinstance] = value
+
+class Student(object):
+    age = Age()
+
+if __name__ == '__main__':
+    s1 = Student()
+    s1.age = 30
+    s1.age = 100
+```
+
+## 类继承
+封装/继承/重载/多态
+支持单继承和多继承
+多态：Pyhton更崇尚鸭子类型
+
+
+### object 和 type的关系
+type类。有很多类，查询类型时都是<class 'type'>。
+* object 和 type都属于tpye类
+* type 类由type元类自身创建的。object类是由元类type创建的。
+* object 的父类为空，没有任何继承类
+* type 的父类是object类  ？？？
+
+https://www.cnblogs.com/busui/p/7283137.html
+[英文版](https://www.eecg.utoronto.ca/~jzhu/csc326/readings/metaclass-class-instance.pdf)
+https://www.cnblogs.com/yhleng/p/7779112.html
+
+类也是对象，所以object也是对象，这个对象由type创建。 type也被称作元类。
+
+```
+print("object:", object.__class__, object.__base__)
+print("type:", type.__class__, type.__base__)
+```
+object: <class 'type'> None
+type: <class 'type'> <class 'object'>
+`__class__` 创建者 ？？？
+`__base__` 基类
+
+
+### 类继承的种类
+* 单一继承
+* 多重继承
+* 菱形继承（钻石继承）
+
+```
+# 父类
+class People(object):
+    def __init__(self):
+        self.gene = 'XY'
+    def walk(self):
+        print('I can walk')
+
+# 子类
+class Man(People):
+    def __init__(self,name):
+        self.name = name
+    def work(self):
+        print('work hard')
+
+class Woman(People):
+    def __init__(self,name):
+        self.name = name    
+    def shopping(self):
+        print('buy buy buy')
+
+p1 = Man('Adam')
+p2 = Woman('Eve')
+```
+问题：
+1. gene有没有被继承？ 否， `__init__`被重载
+2. People父类是什么？ object
+3. 能否实现多重层级继承？ 可以
+4. 能否实现多个父类同时继承？可以
+   ```
+    class Son(Man, Woman):
+    def __init__(self,name):
+        self.name = name
+    
+    p3 = Son("sss")
+    p3.shopping()
+    p3.walk()
+    p3.work()
+   ```
+
+### 多重继承的顺序问题，菱形继承
+
+如果多个父类存在相同的方法，
+经典类，深度优先查找，新式类，广度优先查找。
+mro方法，获得继承查找关系。
+有向无环路图 
+
+
+
+* 继承机制（MRO）
+* MRO和C3算法
+
+。。。
+
+## 设计模式
+### SOLID设计原则
+* 单一责任原则 The Single Respinsibility Principle
+* 开放封闭原则 The Open Closeed Principle
+* 里氏替换原则 The Liskov Substitution Principle
+* 依赖倒置原则 The Depedency Inversion Principle
+* 接口分配原则 The Interface Segregation Principle
+
+...
+### 单例模式
+对象只允许创建一个实例
+
+#### `__init__`和`__new__`的区别
+* `__new__`是实例创建之前被调用，返回该实例对象，是静态方法
+* `__init__`是实例创建之后被调用，是实例方法
+* `__new__`先被调用，`__init__`后被调用
+* `__new__`的返回值（实例）将传递给`__init__`方法的第一个参数，`__init__`给这个实例设置相关参数
+
+#### 装饰器方式
 
