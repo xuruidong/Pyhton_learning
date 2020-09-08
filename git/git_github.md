@@ -19,7 +19,7 @@ git status
 
 添加文件
 git add  xxx
-如果有很多文件，可以使用git  add .  添加所有已修改的文件
+如果有很多文件，可以使用git  add .  添加所有**已修改**的文件
 
 提交
 git commit -m "xxxxxx"
