@@ -67,8 +67,62 @@ def deep_copy_test():
     list2 = copy.deepcopy(list1)
     print(list2)
 
+from collections import namedtuple
+def namedtuple_test():
+    Point = namedtuple('Point', ['x', 'y'])
+    p1 = Point(1, 2)
+    p2 = Point(3, 5)
 
+    print (f"point1 ({p1.x}, {p1.y})")
+    print (f"point2 ({p2[0]}, {p2[1]})")
+    print ("p1 is Point? ", (p1 is Point))
+    print ("p1 is tuple? ", (p1 is tuple))
+    print ("p1 is Point? ", isinstance(p1, Point))
+    print ("p1 is tuple? ", isinstance(p1, tuple))
+
+
+from collections import Counter
+def counter_test():
+    lis = ['a', 'dd', 23, 342]
+    c = Counter(lis)
+    print (c)
+    
+    c.update('hello')  # 也可以一次性update
+    print (c)
+    
+    print (c.most_common(3))
+    print(c['l'])
+    
+
+class func_class(object):
+    def __call__(self):
+        return "111"
+
+
+x = "Global"
+def func2():
+    x = 'enclosing'
+    def func3():
+        return x
+
+    return func3
+
+def square(x):
+    return x**2
+
+def map_test():
+    m = map(square, range(5))
+    print (next(m))
+    for it in m:
+        print (it)
+    
 
 if __name__ == "__main__":
     # assign_test()
-    deep_copy_test()
+    # deep_copy_test()
+    # namedtuple_test()
+    # counter_test()
+
+    # print (dir(__builtins__))
+    map_test()
+    

@@ -66,6 +66,9 @@ def args_test():
     # {'a1': 'aa1', 'a2': 'bb2', 'a3': 'cc3'}
 ```
 
+#### 命名关键字参数
+用来限制传参的名字， 不像关键字参数 **kwargs 可以传任意参数，不管有用没用
+[抄一篇博客，压压惊](https://www.cnblogs.com/wkkkkk/p/5731947.html)
 
 ###  twisted
 [Twisted documentation](https://twistedmatrix.com/documents/current/)
@@ -199,11 +202,6 @@ def Queue(self, maxsize=0):
         from .queues import Queue
         return Queue(maxsize, ctx=self.get_context())
 ```
-#### 命名关键字参数
-用来限制传参的名字， 不像关键字参数 **kwargs 可以传任意参数，不管有用没用
-[抄一篇博客，压压惊](https://www.cnblogs.com/wkkkkk/p/5731947.html)
-
-
 
 #### 管道
 ```

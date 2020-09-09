@@ -280,8 +280,203 @@ def deepcopy(x, memo=None, _nil=[]):
 
 ## 字典和扩展内置数据类型
 collections用来扩展内置数据类型。
-字典的key，必须是可以进行hash的数据类型。
+字典的key，必须是可以进行hash的数据类型,不可变的数据类型。
 
 
 ### 用collections用来扩展内置数据类型
-6:50
+collections是Python内建的一个集合模块，提供了许多有用的集合类。
+几种常用的数据类型
+[教程](https://www.liaoxuefeng.com/wiki/897692888725344/973805065315456)
+
+#### nametuple
+
+namedtuple是一个函数，它用来创建一个自定义的tuple对象，并且规定了tuple元素的个数，并可以用属性而不是索引来引用tuple的某个元素。
+```
+from collections import namedtuple
+def namedtuple_test():
+    Point = namedtuple('Point', ['x', 'y'])
+    p1 = Point(1, 2)
+    p2 = Point(3, 5)
+
+    print (f"point1 ({p1.x}, {p1.y})")
+    print (f"point2 ({p2[0]}, {p2[1]})")
+    print ("p1 is Point? ", (p1 is Point))
+    print ("p1 is tuple? ", (p1 is tuple))
+    print ("p1 is Point? ", isinstance(p1, Point))
+    print ("p1 is tuple? ", isinstance(p1, tuple))
+```
+输出结果：
+```
+point1 (1, 2)
+point2 (3, 5)
+p1 is Point?  False
+p1 is tuple?  False
+p1 is Point?  True
+p1 is tuple?  True
+```
+is 用来判断两个变量是不是同一个对象
+
+#### Counter
+
+```
+def counter_test():
+lis = ['a', 'dd', 23, 342]
+c = Counter(lis)
+print (c)
+
+c.update('hello')  # 也可以一次性update
+print (c)
+
+print (c.most_common(3))
+print(c['l'])
+```
+输出结果：
+```
+Counter({'a': 1, 'dd': 1, 23: 1, 342: 1})
+Counter({'l': 2, 'a': 1, 'dd': 1, 23: 1, 342: 1, 'h': 1, 'e': 1, 'o': 1})
+[('l', 2), ('a', 1), ('dd', 1)]
+2
+```
+
+#### dequeue
+
+#### defaultdict
+
+#### OrderedDict
+能否用来实现LRU ?
+
+#### ChainMap
+
+
+## 函数
+使用类产生函数
+函数的调用
+函数的作用域
+函数的参数处理
+函数的返回值
+
+```
+class func_class(object):
+    def __call__(self):
+        return "111"
+
+fc = func_class()
+print(fc())
+```
+
+### 变量作用域
+命名空间
+
+Type Hint
+Pyhton 作用域遵循LEGB规则。
+LEGB含义：
+* L-Local(function): 函数内名字空间
+* E-Enclosing function locals;外部嵌套函数的名字空间（例如closure）
+* G-Global(module): 函数所在模块（文件）的名字空间
+* B-Builtin(Python): Python 内置模块的名字空间
+
+四个不同作用域
+
+```
+x = "Global"
+def func2():
+    x = 'enclosing'
+    def func3():
+        x = 'Local'
+        print(x)  # 函数内变量优先
+
+    func3()
+func2()
+print(x) # 同作用域变量优先,不会去低等级作用域去查找
+
+```
+输出：
+```
+Local
+Global
+```
+
+闭包：
+```
+x = "Global"
+def func2():
+    x = 'enclosing'
+    def func3():
+        return x
+
+    return func3
+
+f = func2()
+print(f())
+print(x)
+```
+
+```
+enclosing
+Global
+```
+
+print (dir(__builtins__)) 打印内置变量
+
+
+
+### 函数参数
+位置参数(arg1,arg2)，
+关键字参数(arg1="abc",arg2="bcd")
+包裹位置传递(*args)
+包裹关键字传递(**kwargs)
+可变长参数: 包裹位置传递 和 包裹关键字传递
+[笔记链接](../python-3/python-3.md)
+
+#### 偏函数
+functools.partial: 返回一个可调用的partial对象
+使用方法： partial(func, *args, **kwargs)
+
+比如某函数func 需要多个参数，但一部分参数经常是固定的，此时就可以使用partial对其进行包裹。比如Django 的urlconf 中的path, 
+
+
+#### 高阶函数
+函数的参数和返回值是函数。???
+现在不常用，被lambda表达式代替。
+
+lambda表达式相当于是匿名函数，实现简单的功能，使用高阶函数的使用一般使用lambda表达式。
+
+常见的高阶函数： man, reduce, filter, apply(在python 2.3中被移除)
+reduce 被放在了 functools包中。
+推导式和生成器可以替代map 和 filter函数。
+
+##### map
+
+[教程](https://www.runoob.com/python/python-func-map.html)
+map() 会根据提供的函数对指定序列做映射。
+
+第一个参数 function 以参数序列中的每一个元素调用 function 函数，返回包含每次 function 函数返回值的新列表。
+
+map() 函数语法：
+
+map(function, iterable, ...)
+
+```
+def square(x):
+    return x**2
+
+def map_test():
+    m = map(square, range(5))
+    print (next(m))
+    for it in m:
+        print (it)
+```
+```
+0
+1
+4
+9
+16
+```
+
+##### reduce
+
+##### filter
+
+***看 functools 和 itertools文档***
+
