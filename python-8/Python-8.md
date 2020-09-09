@@ -277,3 +277,11 @@ def deepcopy(x, memo=None, _nil=[]):
         return y # 如果字典里已经存储了将要拷贝的对象，则直接返回
         ...
 ```
+
+## 字典和扩展内置数据类型
+collections用来扩展内置数据类型。
+字典的key，必须是可以进行hash的数据类型。
+
+
+### 用collections用来扩展内置数据类型
+6:50
