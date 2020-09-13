@@ -480,3 +480,510 @@ def map_test():
 
 ***看 functools 和 itertools文档***
 
+
+### 函数返回值
+函数返回，可以使用关键字return 和yield。
+如果返回的是可调用对象，叫作闭包。
+
+#### 闭包
+
+闭包，又称闭包函数或者闭合函数，其实和前面讲的嵌套函数类似，不同之处在于，闭包中外部函数返回的不是一个具体的值，而是一个函数。一般情况下，返回的函数会赋值给一个变量，这个变量可以在后面被继续执行调用。
+例如，计算某直线上点的值：
+```
+def y(a, b, x):
+    return a * x + b
+```
+如果求同一条直线上的点：
+```
+y1 = y(2, 1, 100)
+y1 = y(2, 1, 103)
+y1 = y(2, 1, 104)
+```
+写成闭包形式：
+```
+def y(a, b):
+    def _y(x):
+        return a * x + b
+    return _y
+
+f = y(2, 1)
+y1 = f(100)
+y2 = f(103)
+y3 = f(104)
+```
+比较简洁，优雅很多。
+闭包可以避免使用全局值并提供某种形式的数据隐藏。它还可以提供面向对象的解决问题的解决方案。
+当在类中几乎没有方法(大多数情况下是一种方法)时，闭包可以提供一个替代的和更优雅的解决方案。 但是当属性和方法的数量变大时，更好地实现一个类。
+
+## 装饰器
+游戏人物，带装备，数量不确定。如果每种人物+某一种装备，都用一个对象来表示，那么需要N*M个类。
+比较合理的做法， A人物+X装备，实现为A人物增加了X相关的属性，X对A进行装饰。
+
+PEP 318 装饰器的引入: 为什么引入，背景
+PEP 3129 类装饰器
+
+增强而不改变原有函数
+装饰器强调函数的定义而不是运行态
+装饰器语法糖展开：
+```
+@decorate
+def target():
+    print("do something")
+```
+相当于：
+```
+def target():
+    print("do something")
+target = decorate(target)
+```
+target是被修饰函数，返回的结果也是函数。闭包的实现。
+
+
+```
+def decorate(func):
+    print("in decorate, arg:%s" % (func.__name__))
+    def inner():
+        return func()
+
+    return inner
+
+@decorate
+def fun2():
+    print("in func2")
+    
+
+if __name__ == "__main__":
+    pass
+```
+执行时会打印 in decorate, arg:fun2， 在定义func2时，就执行了装饰器decorate, 并且将func2传递给了装饰函数decorate，func2 已经被inner()函数替换了。
+装饰器在模块导入时就会运行。
+
+### 装饰器的应用
+```
+from flask import Flask
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+   return '<h1>hello world </h1>'
+
+# app.add_url_rule('/', 'index')
+
+if __name__ == '__main__':
+   app.run(debug=True)
+```
+app是一个应用程序，类似Django中create app创建的应用。将“/”绑定到index view.
+
+```
+# 注册
+@route('index',methods=['GET','POST'])
+def static_html():
+    return  render_template('index.html')
+
+# 等效于
+static_html = route('index',methods=['GET','POST'])(static_html)()
+
+
+def route(rule, **options):
+    def decorator(f):
+        endpoint = options.pop("endpoint", None)
+        # 使用类似字典的结构以'index'为key 以 method static_html  其他参数为value存储绑定关系
+        self.add_url_rule(rule, endpoint, f, **options)
+        return f
+    return decorator
+```
+
+```
+# 包装
+def html(func):
+    def decorator():
+        return f'<html>{func()}</html>'
+    return decorator
+
+def body(func):
+    def decorator():
+        return f'<body>{func()}</body>'
+    return decorator
+
+@html
+@body
+def content():
+    return 'hello world'
+
+content()
+```
+双重装饰。最后运行的content() 其实是 html中的decorate().
+
+### 被装饰函数
+根据被装饰函数的三种形式，需要对装饰器进行相关设置。
+* 被装饰函数带参数
+* 被修饰函数带不定长参数
+* 被修饰函数带返回值
+
+#### 被装饰函数带参数
+
+```
+def decorate(func):
+    print("in decorate, arg:%s" % (func.__name__))
+    def inner(a, b):
+        print ("inner: %s" % (func.__name__))
+        return func(a, b)
+
+    return inner
+
+@decorate
+def fun2(a, b):
+    print ("fun2: %s" % (fun2.__name__))
+    print(f"in func2, {a}, {b}")
+
+func2()
+```
+输出结果：
+```
+in decorate, arg:fun2
+inner: fun2
+fun2: inner
+in func2, 33, 44
+```
+func2被替换成了decorate()中的inner.
+inner参数要和被装饰函数保持一致。
+
+#### 被装饰函数带不定长参数
+利用 *args, **kwargs
+
+#### 被装饰函数有返回值
+在inner函数中返回
+
+```
+def decorate(func):
+    print("in decorate, arg:%s" % (func.__name__))
+    def inner(*args, **kwargs):
+        print ("inner: %s" % (func.__name__))
+        # do something
+        ret = func(*args, **kwargs)
+        # do something
+        return ret
+
+    return inner
+
+@decorate
+def fun2(a, b):
+    print ("fun2: %s" % (fun2.__name__))
+    print(f"in func2, {a}, {b}")
+```
+
+#### 装饰器带参数
+装饰器也是函数，也可以带参数。就像Flask 的route.
+```
+# 装饰器带参数 
+
+def outer_arg(bar):
+    def outer(func):
+        def inner(*args,**kwargs):
+            ret = func(*args,**kwargs)
+            print(bar)
+            return ret
+        return inner
+    return outer
+
+# 相当于outer_arg('foo_arg')(foo)()
+@outer_arg('foo_arg')
+def foo(a,b,c):
+    return (a+b+c)
+    
+print(foo(1,3,5))
+```
+
+
+#### 装饰器堆叠
+```
+# 装饰器堆叠
+
+@classmethod
+@synchronized(lock)
+def foo(cls):
+    pass
+
+# 相当于
+def foo(cls):
+    pass
+foo2 = synchronized(lock)(foo)
+foo3 = classmethod(foo2)
+foo = foo3
+```
+
+### Python 内置装饰器
+#### wraps
+#####介绍
+[官方文档](https://docs.python.org/3/library/functools.html#functools.wraps)
+python中的装饰器装饰过的函数其实就不是函数本身了.
+```
+from functools import wraps
+def decorate(func):
+    print("in decorate, arg:%s" % (func.__name__))
+    @wraps(func)
+    def inner(*args, **kwargs):
+        print ("inner: %s" % (func.__name__))
+        return func(*args, **kwargs)
+
+    return inner
+
+@decorate
+def fun2(a, b):
+    print ("fun2: %s" % (fun2.__name__))
+    print(f"in func2, {a}, {b}")
+```
+不加`@wraps(func)`, fun2.__name__ 是inner, 加`@wraps(func)`, fun2.__name__是 fun2。  
+***这样有什么用？***  
+比如多个函数被`decorate` 装饰， 被装饰函数中需要使用自己的某些属性，如函数名，如果不加warps，那么获得的都是inner.
+
+##### 使用wrapt包代替@wraps
+[文档](https://wrapt.readthedocs.io/en/latest/quick-start.html)  
+需要安装wrapt  
+
+##### 原理
+
+
+### lru_cache()
+
+```
+import functools
+@functools.lru_cache()
+def fibonacci(n):
+    if (n < 2):
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+import timeit
+print(timeit.timeit('fibonacci(3)', setup="from __main__ import fibonacci"))
+```
+加上@functools.lru_cache()，执行时间变得很短。
+使用 timeit， 执行时间变长？
+
+### 类装饰器
+Python2.6之后支持类装饰器。  
+[教程](https://docs.pythontab.com/interpy/decorators/deco_class/)
+
+在类中需要实现`__init__`, `__call__`
+#### 类装饰器装饰函数
+```
+class Equipment(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, func):
+        @wraps(func)
+        def warpped_funcion(*args, **kwargs):
+            print(f"{func.__name__} is called")
+
+            return func(*args, **kwargs)
+        
+        return warpped_funcion
+
+@Equipment()
+def action():
+    print ("Action:")
+```
+
+调用计数器的实现：
+```
+class Count(object):
+    def __init__(self, func):
+        self._func = func
+        self.number_calls = 0
+
+    def __call__(self, *args, **kwargs):
+        self.number_calls += 1
+        print ("num: %d" % self.number_calls)
+        return self._func(*args, **kwargs)
+
+@Count
+def count_func1():
+    pass
+
+@Count
+def count_func2():
+    pass
+```
+#### 类装饰器装饰类
+对类中的方法进行装饰。
+```
+# 装饰类
+def decorator(aClass):
+    class newClass(object):
+        def __init__(self, args):
+            self.times = 0
+            self.wrapped = aClass(args)
+            
+        def display(self):
+            # 将runtimes()替换为display()
+            self.times += 1
+            print("run times", self.times)
+            self.wrapped.display()
+    return newClass
+
+@decorator
+class MyClass(object):
+    def __init__(self, number):
+        self.number = number
+    # 重写display
+    def display(self):
+        print("number is",self.number)
+
+six = MyClass(6)
+for i in range(5):
+    six.display()
+```
+疑问：
+* 装饰器中的类，不继承被装饰的类？
+* 装饰器中的类要实现被装饰类所有的方法？
+
+## 对象协议
+由魔术方法来实现对象协议。鸭子类型。
+常用的魔术方法：
+1. 容器类型协议
+* `__str__` 打印对象时，默认输出该方法的返回值
+* `__getitem__`, `__setitem__`,`__delitem__` 字典索引操作
+* `__iter__` 迭代器
+* `__call__` 可调用对象协议
+
+2. 比较大小的协议
+* `__eq__`
+* `__gt__`
+
+3. 描述符协议和属性交互协议
+* `__get__`
+* `__set__`
+
+4. 可哈希对象
+* `__hash__`
+
+5. 上下文管理器
+6. 
+自己定义的类，尽量向标准类型靠拢。
+
+
+## 迭代器和生成器
+
+在函数中使用yield关键字，可以实现生成器。
+生成器可以让函数返回可迭代对象。
+yield 和 return不同， return 返回后，函数状态终止，yield保持函数的执行状态。
+函数被yield会暂停，局部变量也会被保存
+迭代器终止时，会抛出StopIteration异常。
+
+`[i for i in range(10)]` 是list  
+`(i for i in range(10))` 不是list, 也不是元组，而是生成器
+
+```
+def generator_test():
+    g = (i for i in range(10))
+    print (g)
+    print(type(g))
+    print (next(g))
+    print (next(g))
+    print (next(g))
+    for i in g:
+        print (i, end=' ')
+```
+
+```
+<generator object generator_test.<locals>.<genexpr> at 0x00000000037A47C8>
+<class 'generator'>
+0
+1
+2
+3 4 5 6 7 8 9
+```
+
+next() 对应的魔术方法是`__next__()`, 迭代的魔术方法是`__iter__`. 迭代器实现了这两个方法。  
+如果只实现了`__iter__`, 那么这个对象就是一个可迭代对象。
+
+可迭代iterable, 迭代器Iterator， 生成器Generator 的关系：
+可迭代iterable： 实现了`__iter__`方法， 迭代器和生成器都是可迭代的。
+迭代器Iterator： 实现了`__next__()` 和 `__iter__()`
+生成器Generator: 由yield返回生成， 属于迭代器。
+
+```
+def generator_test2():
+    a = [1, 2, 3, 4, 5]
+    print(hasattr(a, '__iter__'))  # True
+    print(hasattr(a, '__next__'))  # False
+```
+list 属于可迭代对象，但不是迭代器。
+
+### 迭代器使用
+
+#### itertools 三个常见迭代器
+##### 计数器
+```
+import itertools
+def itertools_test():
+    c = itertools.count()
+    print (next(c))  # 0
+    print (next(c))  # 1
+```
+
+##### 循环遍历
+```
+    cycle = itertools.cycle(('y', 'N'))
+    print (next(cycle))
+    print (next(cycle))
+    print (next(cycle))
+```
+
+##### 重复
+```
+    repeat = itertools.repeat(10, times=2)
+    print (next(repeat))  # 10
+    print (next(repeat))  # 10
+    print (next(repeat))  # builtins.StopIteration
+    # 不指定times, 则无限
+```
+
+##### chain
+有两个可迭代对象， 如"ABC", [1,2,3], 需要一次获取两个对象的元素。通过两层循环+yield可以实现。
+使用 itertools.chain 也可以实现，避免了需要两次循环。
+```
+chain = itertools.chain("ACB", [3, 6])
+for i in chain:
+    print (i)
+```
+
+在python 3.3 引入了 yield from, 也可以解决类似的问题。PEP-380
+```
+def chain_func(*iterables):
+    for it in iterables:
+        yield from it
+
+
+print (list(chain_func("ABC", [1, 2, 3])))
+# ['A', 'B', 'C', 1, 2, 3]
+```
+
+#### 迭代器有效性
+
+```
+def iter_valid():
+    dict_tmp = {'a': 1, 'b': 2}
+    it = iter(dict_tmp)
+    print(next(it))     # a
+    dict_tmp['c'] = 3
+    print(next(it))     # builtins.RuntimeError: dictionary changed size during iteration
+```
+在迭代过程中，对被迭代字典对象进行修改（增，删），字典迭代器失效。 
+list 无影响。但是，当遍历完毕后，迭代器会失效，即使对list 进行增加，也无法使用迭代器。
+```
+al = [1, 2, 3]
+    it_a = iter(al)
+    print (next(it_a))
+    al.append(4)
+    print (next(it_a))
+    del al[2]
+    print (next(it_a))
+    for i in it_a:
+        print (i)
+    al.append(5)
+    print (next(it_a))  # builtins.StopIteration
+```
+
+### yield表达式

@@ -116,6 +116,156 @@ def map_test():
     for it in m:
         print (it)
     
+from functools import wraps
+import wrapt
+
+def decorate(func):
+    print("in decorate, arg:%s" % (func.__name__))
+    # @wraps(func)
+    # @wrapt.decorator
+    def inner(*args, **kwargs):
+        print ("inner: %s" % (func.__name__))
+        ret = func(*args, **kwargs)
+        print ("inner return: ")
+        return ret
+
+    return inner
+
+@decorate
+def fun2(a, b):
+    print ("fun2: %s" % (fun2.__name__))
+    print(f"in func2, {a}, {b}")
+
+
+import functools
+@functools.lru_cache()
+def fibonacci(n):
+    if (n < 2):
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+
+class Equipment(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, func):
+        @wraps(func)
+        def warpped_funcion(*args, **kwargs):
+            print(f"{func.__name__} is called")
+
+            return func(*args, **kwargs)
+        
+        return warpped_funcion
+
+@Equipment()
+def action():
+    print ("Action:")
+    
+
+class Count(object):
+    def __init__(self, func):
+        self._func = func
+        self.number_calls = 0
+
+    def __call__(self, *args, **kwargs):
+        self.number_calls += 1
+        print ("num: %d" % self.number_calls)
+        return self._func(*args, **kwargs)
+
+@Count
+def count_func1():
+    pass
+
+@Count
+def count_func2():
+    pass
+
+
+def cls_decorator(old_cls):
+    class new_class(old_cls):
+        def __init__(self, *args, **kwargs):
+            pass
+
+
+
+class MyClass(object):
+    def __init__(self, *args, **kwargs):
+        self.dic = {}
+
+    def __str__(self):
+        return "I am MyClass"
+    
+    def __getitem__(self, key):
+        return self.dic[key]
+
+    def __setitem__(self, key, value):
+        self.dic[key] = value
+
+
+def generator_test():
+    g = (i for i in range(10))
+    print (g)
+    print(type(g))
+    print (next(g))
+    print (next(g))
+    print (next(g))
+    for i in g:
+        print (i, end=' ')
+
+
+def generator_test2():
+    a = [1, 2, 3, 4, 5]
+    print(hasattr(a, '__iter__'))  # True
+    print(hasattr(a, '__next__'))  # False
+    
+
+import itertools
+def itertools_test():
+    c = itertools.count()
+    print (next(c))
+    print (next(c))
+
+    cycle = itertools.cycle(('y', 'N'))
+    print (next(cycle))
+    print (next(cycle))
+    print (next(cycle))
+
+    repeat = itertools.repeat(10, times=2)
+    for i in range(2):
+        print (next(repeat))
+        
+    chain = itertools.chain("ACB", [3, 6])
+    for i in chain:
+        print (i)
+        
+
+def chain_func(*iterables):
+    for it in iterables:
+        yield from it
+
+
+# print (list(chain_func("ABC", [1, 2, 3])))
+
+def iter_valid():
+    dict_tmp = {'a': 1, 'b': 2}
+    it = iter(dict_tmp)
+    print(next(it))     # a
+    dict_tmp['b'] = 3
+    # builtins.RuntimeError: dictionary changed size during iteration
+    print(next(it))
+
+    al = [1, 2, 3]
+    it_a = iter(al)
+    print (next(it_a))
+    al.append(4)
+    print (next(it_a))
+    del al[2]
+    print (next(it_a))
+    for i in it_a:
+        print (i)
+    al.append(5)
+    print (next(it_a))
 
 if __name__ == "__main__":
     # assign_test()
@@ -124,5 +274,12 @@ if __name__ == "__main__":
     # counter_test()
 
     # print (dir(__builtins__))
-    map_test()
-    
+    # map_test()
+    # fun2(33, 44)
+    # import timeit
+    # print(timeit.timeit('fibonacci(3)', setup="from __main__ import fibonacci"))
+    # print (fibonacci(30))
+    # action()
+    # generator_test2()
+    iter_valid()
+    print ("=== end ===")
