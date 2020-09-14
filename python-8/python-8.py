@@ -111,7 +111,8 @@ def square(x):
     return x**2
 
 def map_test():
-    m = map(square, range(5))
+    # m = map(square, range(5))
+    m = map(square, 5)
     print (next(m))
     for it in m:
         print (it)
@@ -274,12 +275,12 @@ if __name__ == "__main__":
     # counter_test()
 
     # print (dir(__builtins__))
-    # map_test()
+    map_test()
     # fun2(33, 44)
     # import timeit
     # print(timeit.timeit('fibonacci(3)', setup="from __main__ import fibonacci"))
     # print (fibonacci(30))
     # action()
     # generator_test2()
-    iter_valid()
+    # iter_valid()
     print ("=== end ===")

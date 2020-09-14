@@ -64,12 +64,13 @@ E:\LINUX\NOTE\PYTHON\PYTHON-6\DJANGO_TEST
         ├─urls.py
         └─wsgi.py
 ```
-其中， manage.py 是命令行工具， 通过 python manage.py help 可查看支持的操作。
+其中， manage.py 是命令行工具，来对项目进行管理和操作。 通过 python manage.py help 可查看支持的操作。
 settings.py是项目配置文件。
 
 #### 创建 Django 应用程序
+创建好项目后，相当于有了一个框架。正在运行的是应用程序。  
 $python manage.py startapp index
-创建名为index的app。之后会创建一系列的文件和目录， 其中models.py 就是模型， views.py是视图相关内容。
+创建名为index的app。之后会创建一系列的文件和目录， 其中models.py 就是模型， views.py是视图相关内容，admin.py 用于管理后台， tests.py 进行自动化测试，migrations 是数据库迁移文件夹。
 ```
 E:\LINUX\NOTE\PYTHON\PYTHON-6\DJANGO_TEST\MYDJANGO\INDEX
 ├─__init__.py
@@ -103,6 +104,8 @@ $ python manage.py runserver 0.0.0.0:9000
 [For more information on this file](https://docs.djangoproject.com/en/2.2/topics/settings/)
 [For the full list of settings and their values](https://docs.djangoproject.com/en/2.2/ref/settings/)
 
+debug 模式只能服务一个连接？
+
 app 列表
 ```
 INSTALLED_APPS = [
@@ -124,10 +127,12 @@ INSTALLED_APPS = [
 
 中间件是request 和 response 对象之间的钩子
 url匹配配置， 默认使用 MyDjango.urls， 即 urls.py
-
+模板配置，
 Django中的数据库默认使用sqlite，
+静态文件路径
 
 ## url 调度器
+在settings.py 中可以设置url 的入口，
 URLconf
 当一个用户请求 Django 站点的一个页面：
 1. 如果传入 HTTPRequest 对象拥有urlconf属性（通过中间件设置），它的值将被用来代替ROOT_URLCONF设置。
@@ -156,6 +161,7 @@ path函数第一个参数是请求的http://127.0.0.1:8000/admin， 返回admin.
 `path('', include('index.urls'))`,当访问 http://127.0.0.1:8000 时，就会找index 下的urls.py文件。
 include 需要额外引入。
 此时， 要对“”路径和view进行匹配，在index/urls.py中对路径进行解析。
+include 只是将路径和URL配置文件建立对应关系，真正的view 和 url 的对应关系，还需要在URL配置文件中实现。
 ```
 from django.urls import path
 from . import views
@@ -165,7 +171,7 @@ urlpatterns = [
     path('', views.index),
 ]
 ```
-对于路径“”， 去找views.index。
+对于路径“”， 去找views.index（views.py 中的 index 函数）。
 
 在views.py 中实现index函数
 ```
@@ -177,6 +183,9 @@ from django.http import HttpResponse
 def index(request):
 	return HttpResponse("Hello Django!")
 ```
+
+简单总结：
+当请求到达，首先找到settings.py 里的ROOT_URLCONF 配置，是MyDjango.urls， 转到MyDjango/urls.py , 在 urlpatterns 中对url 进行匹配，进而匹配到对应的view。如果url 匹配到的是例如include('douban.urls'), 则会到app下找urls.py， 再找到对应的view， 前提是该app 在settings.py 的app列表中注册。view 对请求进行处理，并返回。
 
 ## 模块和包
 * 模块：Python 中一个以 .py 结尾的文件就是一个模块，模块中定义了变量、函数等来实现一些类似的功能。Python 有很多自带的模块（标准库）和第三方模块，一个模块可以被其他模块引用，实现了代码的复用性。
