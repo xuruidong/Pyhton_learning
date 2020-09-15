@@ -418,6 +418,41 @@ Global
 
 print (dir(__builtins__)) 打印内置变量
 
+#### nonlocal 语句
+[nonlocal 语句](https://docs.python.org/zh-cn/3/reference/simple_stmts.html#the-nonlocal-statement)
+
+```
+def outer():
+    v = 2
+    def inner():
+        t = v + 1
+        print(t)
+        v = t
+        return v
+    return inner
+```
+在 `t = v + 1` 处报错， builtins.UnboundLocalError: local variable 'v' referenced before assignment。
+因为这个作用域里有改变 v 本身的操作：v = t，所以 v 被认为是一个内部的变量，而我们并不能在这个作用域里找到它的定义。
+这个时候需要使用 nonlocal 关键字，把 v 声明为外部作用域的变量。
+```
+def outer():
+    v = 2
+    def inner():
+        nonlocal v
+        t = v + 1
+        print(t)
+        v = t
+        return v
+    return inner
+```
+同理，局部作用域里引用全局变量是可以的，但是当你要改变它时，需要加上global关键字。
+```
+g = "abc"
+def global_test():
+    print (g)
+    # g = "111"  # builtins.UnboundLocalError: local variable 'g' referenced before assignment  at  print (g)
+    print ("end", g)
+```
 
 
 ### 函数参数
