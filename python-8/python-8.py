@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 
 def assign_test():
     a = 123
@@ -87,7 +88,7 @@ def counter_test():
     c = Counter(lis)
     print (c)
     
-    c.update('hello')  # 也可以一次性update
+    c.update('hello')  # 涔熷彲浠ヤ竴娆℃�update
     print (c)
     
     print (c.most_common(3))
@@ -111,14 +112,14 @@ def square(x):
     return x**2
 
 def map_test():
-    # m = map(square, range(5))
-    m = map(square, 5)
+    m = map(square, range(5))
+    # m = map(square, 5)
     print (next(m))
     for it in m:
         print (it)
     
 from functools import wraps
-import wrapt
+# import wrapt
 
 def decorate(func):
     print("in decorate, arg:%s" % (func.__name__))
@@ -268,6 +269,26 @@ def iter_valid():
     al.append(5)
     print (next(it_a))
 
+g = "abc"
+def global_test():
+    print (g)
+    g = "111"
+    print (g)
+
+def outer():
+    v = 2
+    def inner():
+        nonlocal v
+        t = v + 1
+        print(t)
+        v = t
+        return v
+    return inner
+
+def nolocal_test():
+    o = outer()
+    print (o())
+    
 if __name__ == "__main__":
     # assign_test()
     # deep_copy_test()
@@ -283,4 +304,6 @@ if __name__ == "__main__":
     # action()
     # generator_test2()
     # iter_valid()
+    global_test()
+    # nolocal_test()
     print ("=== end ===")
