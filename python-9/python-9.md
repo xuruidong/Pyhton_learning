@@ -58,3 +58,84 @@ def tuple_test():
 
 
 ## view视图的请求过程
+view 可以加载Model中的数据，也可以通过render()方法来渲染Template 模板。还有核心功能：处理用户发送的请求，并且将请求结果返回给用户。  
+一个views.py示例：
+```
+from django.shortcuts import render
+from django.shortcuts import redirect
+from django.http import HttpResponse
+
+# Create your views here.
+
+def index(request):
+	return HttpResponse("Hello Django!")
+	
+
+def re_year(request, year):
+	return render(request, 'yearview.html')
+
+
+def myint(request, year):
+	# return HttpResponse(year+10)
+	return redirect("http://www.baidu.com")
+```
+所有的view 函数都带有参数 request, 也就是用户的请求信息。
+### 请求如何到达view
+
+view 函数参数的request, 是 <class 'django.core.handlers.wsgi.WSGIRequest'>， WSGIRequest 继承于django.http.HttpRequest 每收到一个请求，就会产生一个 WSGIRequest 对象。  
+那么 request 是在什么地方产生的呢？ 在启动服务时， 运行了 manager.py， 调用了WSGI， request就是由 WSGI 创建的。
+处理完请求后，返回内容，可以返回一个 HttpResponse 对象。
+
+WSGIRequest 在`__init__`中并没有调用super, 所以像 META 的属性被重新赋值定义，其他的如GET等被定义为被 cached_property 装饰的方法。 
+META 是元信息，保存了系统环境变量，HTTP 头信息，URL请求参数等等。
+在 HttpRequest 和 WSGIRequest 中，GET 是 QueryDict， QueryDict 继承自 MultiValueDict ，dict，用来保存url 参数，键对应的是list， 如访问 http://127.0.0.1:8000/?a=1&b=wwwwwwwwwwwwww&a=22，GET 值是 <QueryDict: {'a': ['1', '22'], 'b': ['wwwwwwwwwwwwww']}> ，打印结果为什么是这样的呢？ 因为在 MultiValueDict 中
+```
+def __repr__(self):
+    return "<%s: %s>" % (self.__class__.__name__, super().__repr__())
+```
+
+#### cached_property
+WSGIRequest 的 GET、COOKIES 等方法被 cached_property 装饰。
+```
+
+```
+
+### 对响应的处理
+[HttpResponse 用法](https://docs.djangoproject.com/zh-hans/2.2/ref/request-response/#django.http.HttpResponse)
+
+在返回 HttpResponse 对象时，可以通过关键字参数指定header 信息，
+`return HttpResponse("Hello Django!", content_type="text/abc")`
+
+返回Json 格式：
+```
+from django.http import JsonResponse
+res = JsonResponse({'a': 1, "b": "ddd"})
+```
+
+在 HttpResponseBase（HttpResponse 的父类）中实现了 `__setitem__, __delitem__` 等方法，所以可以像操作字典的方式对响应头信息进行设置：
+```
+res = JsonResponse({'a': 1, "b": "ddd"})
+res['abc'] = "ddddddd"
+```
+一些常用的的响应子类，如404
+```
+return HttpResponseNotFound("aaavvvvvvddd")
+```
+
+### 总结
+![DjangoFlowchart](DjangoFlowchart.png)
+1. User requests a page
+2. Request reaches ***Request Middlewares***, which could manipulate or answer the request
+3. The ***URLConf*** finds the related View using urls.py
+4. ***View Middlewares*** are called, which could manipulate or answer the request
+5. The ***view*** function is invoked
+6. The ***view*** could optionally access data through models
+7. All model-to-DB interactions are done via a ***manager***
+8. Views could use a special context if needed
+9. The context is passed to the ***Template*** for rendering
+
+a. Template uses ***Filters*** and ***Tags*** to render the output
+b. Output is returned to the view
+c. HTTPResponse is sent to the ***Response Middlerwares***
+d. Any of the response middlewares can enrich the response or return a completely new response
+e. The response is sent to the user’s browser.

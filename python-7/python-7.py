@@ -189,6 +189,7 @@ def test():
     p3.shopping()
     p3.walk()
     p3.work()
+    print (p1.gene)
 
 if __name__ == "__main__":
     # class_test()
