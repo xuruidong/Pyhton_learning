@@ -688,4 +688,166 @@ mro方法，获得继承查找关系。
 * `__new__`的返回值（实例）将传递给`__init__`方法的第一个参数，`__init__`给这个实例设置相关参数
 
 #### 装饰器方式
+使用装饰器方式实现单例：
+```
+def singleton(cls):
+    instances = {}
+    def getinstance():
+        if cls not in instances:
+            instances[cls] = cls()
+        return instances[cls]
+    return getinstance
+
+@singleton
+class MyClass:
+    def __init__(self):
+        print ("MyClass init")
+
+def singleton_test():
+    c1 = MyClass()
+    c2 = MyClass()
+    print(id(c1))
+    print(id(c2))
+```
+输出结果：
+```
+MyClass init
+48804360
+48804360
+```
+
+#### `__new__`方式
+
+```
+class Single(object):
+    __instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls.__instance:
+            print ("__instance is None")
+            cls.__instance = object.__new__(cls)
+        return cls.__instance
+
+    def __init__(self, name):
+        self.name = name
+        print(f"name = {name}")
+        
+    def func(self):
+        print(f"run func, {self.name}")
+
+def single_test():
+    c1 = Single("a")
+    c2 = Single("b")
+    print (id(c1))
+    print (id(c2))
+    c1.func()
+    c2.func()
+```
+输出：
+```
+__instance is None
+name = a
+name = b
+48792408
+48792408
+run func, b
+run func, b
+```
+* 这样的单例不安全啊（不仅仅是说线程安全），创建实例时，虽然返回同一个对象，但可能会将对象的内部变量修改掉
+
+#### 线程安全版
+threading + double check
+
+#### import 版
+```
+# 利用经典的双检查锁机制，确保了在并发环境下Singleton的正确实现。
+# 但这个方案并不完美，至少还有以下两个问题：
+# ·如果Singleton的子类重载了__new__()方法，会覆盖或者干扰Singleton类中__new__()的执行，
+# 虽然这种情况出现的概率极小，但不可忽视。
+# ·如果子类有__init__()方法，那么每次实例化该Singleton的时候，
+# __init__()都会被调用到，这显然是不应该的，__init__()只应该在创建实例的时候被调用一次。
+# 这两个问题当然可以解决，比如通过文档告知其他程序员，子类化Singleton的时候，请务必记得调用父类的__new__()方法；
+# 而第二个问题也可以通过偷偷地替换掉__init__()方法来确保它只调用一次。
+# 但是，为了实现一个单例，做大量的、水面之下的工作让人感觉相当不Pythonic。
+# 这也引起了Python社区的反思，有人开始重新审视Python的语法元素，发现模块采用的其实是天然的单例的实现方式。
+# ·所有的变量都会绑定到模块。
+# ·模块只初始化一次。
+# ·import机制是线程安全的（保证了在并发状态下模块也只有一个实例）。
+# 当我们想要实现一个游戏世界时，只需简单地创建World.py就可以了。
+```
+
+```
+# World.py
+import Sun
+def run():
+    while True:
+        Sun.rise()
+        Sun.set()
+
+# main.py
+import World
+World.run()
+```
+
+### 工厂模式
+#### 简单工厂模式
+```
+class Human(object):
+    def __init__(self):
+        self.name = None
+        self.gender = None
+
+    def getName(self):
+        return self.name
+
+    def getGender(self):
+        return self.gender
+
+class Man(Human):
+    def __init__(self, name):
+        print(f'Hi,man {name}')
+
+class Woman(Human):
+    def __init__(self, name):
+        print(f'Hi,woman {name}')
+
+class Factory:
+    def getPerson(self, name, gender):
+        if gender == 'M':
+            return Man(name)
+        elif gender == 'F':
+            return Woman(name)
+        else:
+            pass
+
+if __name__ == '__main__':
+    factory = Factory()
+    person = factory.getPerson("Adam", "M")
+```
+
+#### 类工厂模式
+一般在框架类代码中会见到，如Django， Scrapy。  
+主要就是利用 setattr ，对类设置属性，动态加载方法。
+```
+# 返回在函数内动态创建的类
+def factory2(func):
+    class klass: pass
+    #setattr需要三个参数:对象、key、value
+    setattr(klass, func.__name__, func)
+    return klass
+
+def say_foo(self): 
+    print('bar')
+
+Foo = factory2(say_foo)
+foo = Foo()
+foo.say_foo()
+```
+
+## 元类
+[直通车](https://www.liaoxuefeng.com/wiki/1016959663602400/1017592449371072)
+Python 是动态语言，可以在运行时创建类。
+type() 函数可以查看一个类型或变量的类型，也可以创建出新的类型。
+`Hello = type('Hello', (object,), dict(hello=fn))`
+
+除了使用type()动态创建类以外，要控制类的创建行为，还可以使用metaclass。
 

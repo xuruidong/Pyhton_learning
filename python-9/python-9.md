@@ -139,3 +139,40 @@ b. Output is returned to the view
 c. HTTPResponse is sent to the ***Response Middlerwares***
 d. Any of the response middlewares can enrich the response or return a completely new response
 e. The response is sent to the user’s browser.
+
+## Model
+当自定义Model 类时，要继承 models.Model ，此时 Django 会自动创建 id 主键， 自动拥有查询管理器对象，可以使用查询管理器提供的内置查询等命令。可以使用 ORM API 对数据库实现 CRUD  
+以下是一个示例：
+```
+class Name(models.Model):
+    # id 被自动创建
+    name = models.CharField(max_length=50)
+    author = models.CharField(max_length=50)
+    stars = models.CharField(max_length=10)
+```
+
+### id 创建过程
+转到 models.Model 的定义，
+```
+class Model(metaclass=ModelBase):
+    ...
+```
+Model 指定了元类，所以在创建Model 时会使用元类的`__new__`。
+ModelBase : `class ModelBase(type):` 符合元类的特点：继承自 type, 实现了`__new__`,并且返回了类。
+在 `ModelBase.__new__` 中，先判断初始化的对象是不是本身：
+```
+# Also ensure initialization is only performed for subclasses of Model
+# (excluding Model class itself).
+parents = [b for b in bases if isinstance(b, ModelBase)]
+if not parents:
+    return super_new(cls, name, bases, attrs)
+```
+***什么情况下会执行到这里？***
+然后创建了一个类。
+添加 _meta 属性：`new_class.add_to_class('_meta', Options(meta, app_label))`
+在返回新类前，执行了：
+```
+new_class._prepare()
+new_class._meta.apps.register_model(new_class._meta.app_label, new_class)
+```
+8:58

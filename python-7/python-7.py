@@ -191,13 +191,91 @@ def test():
     p3.work()
     print (p1.gene)
 
+
+def singleton(cls):
+    instances = {}
+    def getinstance():
+        if cls not in instances:
+            instances[cls] = cls()
+        return instances[cls]
+    return getinstance
+
+@singleton
+class MyClass:
+    def __init__(self):
+        print ("MyClass init")
+
+def singleton_test():
+    c1 = MyClass()
+    print(dir(MyClass))
+    c2 = MyClass()
+    print(id(c1))
+    print(id(c2))
+
+
+class Single(object):
+    __instance = None
+    def __new__(cls, *args, **kwargs):
+        print ("new__, arg=%s" % args)
+        if not cls.__instance:
+            print ("__instance is None")
+            cls.__instance = object.__new__(cls)
+        return cls.__instance
+
+    def __init__(self, name):
+        self.name = name
+        print(f"name = {name}")
+        
+    def func(self):
+        print(f"run func, {self.name}")
+
+def single_test():
+    c1 = Single("a")
+    c2 = Single("b")
+    print (id(c1))
+    print (id(c2))
+    c1.func()
+    c2.func()
+
+
+class ModelBase(type):
+    """Metaclass for all models."""
+    def __new__(cls, name, bases, attrs, **kwargs):
+        super_new = super().__new__
+
+        # Also ensure initialization is only performed for subclasses of Model
+        # (excluding Model class itself).
+        print (cls)
+        print (name)
+        print (f"bases={bases}")
+        print (attrs)
+        parents = [b for b in bases if isinstance(b, ModelBase)]
+        if not parents:
+            return super_new(cls, name, bases, attrs)
+
+        return super_new(cls, name, bases, attrs)
+
+class Model(metaclass=ModelBase, Man):
+    def __init__(self):
+        print ("Model init")
+
+def meta_test():
+    # m1 = ModelBase("M", )
+
+    print("create Model===")
+    m2 = Model()
+    
+    
 if __name__ == "__main__":
     # class_test()
     # class_method_test()
     # getattribute_test()
     # property_test()
     # property_test2()
-    test()
+    # test()
+    # singleton_test()
+    # single_test()
+    meta_test()
     
     print("object:", object.__class__, object.__base__)
     print("type:", type.__class__, type.__base__)
