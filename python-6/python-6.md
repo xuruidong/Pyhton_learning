@@ -192,7 +192,7 @@ def index(request):
 * 包：包是存放模块的文件夹，包中包含 `__init__.py` 和其他模块，`__init__.py` 可为空也可定义属性和方法，在 Python3.3 之前的版本，一个文件夹中只有包含`__init__.py`，其他程序才能从该文件夹引入相应的模块、函数等，之后的版本没有 `__init__.py` 也能正常导入，简单来说就是 Python3.3 之前的版本，`__init__.py` 是包的标识，是必须要有的，之后的版本可以没有。
 
 
-[Python __all__](http://c.biancheng.net/view/2401.html)
+[Python `__all__`](http://c.biancheng.net/view/2401.html)
 
 模块的导入
 ```
