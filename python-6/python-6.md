@@ -68,9 +68,9 @@ E:\LINUX\NOTE\PYTHON\PYTHON-6\DJANGO_TEST
 settings.py是项目配置文件。
 
 #### 创建 Django 应用程序
-创建好项目后，相当于有了一个框架。正在运行的是应用程序。  
+创建好项目后，相当于有了一个框架。但真正运行的是应用程序。  
 $python manage.py startapp index
-创建名为index的app。之后会创建一系列的文件和目录， 其中models.py 就是模型， views.py是视图相关内容，admin.py 用于管理后台， tests.py 进行自动化测试，migrations 是数据库迁移文件夹。
+创建名为index的app。之后会创建一系列的文件和目录， 其中 models.py 就是模型， views.py是视图相关内容，admin.py 用于管理后台， tests.py 进行自动化测试，migrations 是数据库迁移文件夹。
 ```
 E:\LINUX\NOTE\PYTHON\PYTHON-6\DJANGO_TEST\MYDJANGO\INDEX
 ├─__init__.py
@@ -100,8 +100,8 @@ $ python manage.py runserver 0.0.0.0:9000
 * 缓存
 * 中间件
 
-大部分不需要修改。
-[For more information on this file](https://docs.djangoproject.com/en/2.2/topics/settings/)
+大部分不需要修改。  
+[For more information on this file](https://docs.djangoproject.com/en/2.2/topics/settings/)  
 [For the full list of settings and their values](https://docs.djangoproject.com/en/2.2/ref/settings/)
 
 debug 模式只能服务一个连接？
@@ -125,10 +125,10 @@ INSTALLED_APPS = [
 ]
 ```
 
-中间件是request 和 response 对象之间的钩子
-url匹配配置， 默认使用 MyDjango.urls， 即 urls.py
-模板配置，
-Django中的数据库默认使用sqlite，
+中间件是request 和 response 对象之间的钩子  
+url匹配配置， 默认使用 MyDjango.urls， 即 urls.py  
+模板配置，  
+Django中的数据库默认使用sqlite，  
 静态文件路径
 
 ## url 调度器
@@ -140,7 +140,7 @@ URLconf
 3. 一旦有URL匹配成功，Django导入并调用相关的视图，视图会获得如下参数：
    * 一个 HTTPRequest 实例
    * 一个或多个位置参数提供
-1. 如果没有URL被匹配，或者匹配过程中出现了异常，Django 会调用一个适当的错误处理视图。
+4. 如果没有URL被匹配，或者匹配过程中出现了异常，Django 会调用一个适当的错误处理视图。
 
 ### path()函数
 Django path() 可以接收四个参数，分别是两个必选参数：route、view 和两个可选参数：kwargs、name。
