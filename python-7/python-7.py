@@ -1,4 +1,4 @@
-
+# -*- coding:utf-8 -*-
 def class_test():
     class Human():
         'the docstring belonging to the class'
@@ -134,7 +134,7 @@ def property_test2():
     class Rectangle(object):
         @property
         def width(self):
-            #变量名不与方法名重复，改为true_width，下同
+            #鍙橀噺鍚嶄笉涓庢柟娉曞悕閲嶅�锛屾敼涓簍rue_width锛屼笅鍚�
             return self.__width
 
         @width.setter
@@ -150,21 +150,21 @@ def property_test2():
             self.true_height = value
             
     s = Rectangle()
-    #与方法名一致
+    #涓庢柟娉曞悕涓�嚧
     s.width = 1024
     # print (s.__width) # builtins.AttributeError: 'Rectangle' object has no attribute '__width'
     s.height = 768
     print(s.width,s.height)    
 
 
-# 父类
+# 鐖剁被
 class People(object):
     def __init__(self):
         self.gene = 'XY'
     def walk(self):
         print('I can walk')
 
-# 子类
+# 瀛愮被
 class Man(People):
     def __init__(self,name):
         self.name = name
