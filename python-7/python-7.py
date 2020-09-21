@@ -255,7 +255,7 @@ class ModelBase(type):
 
         return super_new(cls, name, bases, attrs)
 
-class Model(metaclass=ModelBase, Man):
+class Model(metaclass=ModelBase):
     def __init__(self):
         print ("Model init")
 
