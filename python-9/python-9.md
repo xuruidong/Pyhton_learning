@@ -175,4 +175,55 @@ if not parents:
 new_class._prepare()
 new_class._meta.apps.register_model(new_class._meta.app_label, new_class)
 ```
-8:58
+在 _prepare(cls) 中， opts._prepare(cls) 相当于是 Options._prepare(cls)
+
+在 Options._prepare() 中，`if self.pk is None:` 如果主键是空，。。。
+
+### Model 的查询管理器
+```
+from .models import DoubanShort
+
+# Create your views here.
+def movies(request):
+    queryset = DoubanShort.objects.all()
+    # queryset = T1.objects.values('sentiment')
+    condtions = {'stars__gte': 4}
+    res = queryset.filter(**condtions)
+    print (res)
+    return render(request, 'index.html', locals())
+```
+* 如何让查询管理器的名字不是 objects
+* 如何利用 Manager(objects) 实现对Model 的 CRUD?
+* 为什么查询管理器返回 QuerySet 对象？
+
+当继承了 models.Model ,就有了查询管理器。
+在 ModelBase._prepare() 中：
+```
+if not opts.managers:
+    if any(f.name == 'objects' for f in opts.fields):
+        raise ValueError(
+            "Model %s must specify a custom Manager, because it has a "
+            "field named 'objects'." % cls.__name__
+        )
+    manager = Manager()
+    manager.auto_created = True
+    cls.add_to_class('objects', manager)
+```
+Manager 的定义：
+```
+class Manager(BaseManager.from_queryset(QuerySet)):
+    pass
+```
+from_queryset 是一个类方法，在这里返回了新类 BaseManagerFromQuerySet ，并且使用 _get_queryset_methods 设置了属性，所以 Manager 继承自 BaseManagerFromQuerySet ，父类都是 QuerySet 。所以 Manager 拥有 QuerySet 大部分方法。  
+
+_get_queryset_methods test:
+```
+
+```
+
+
+#### inspect --- 检查对象
+[文档](https://docs.python.org/zh-cn/3/library/inspect.html)
+
+## Template
+### render 如何找到要加载的文件
