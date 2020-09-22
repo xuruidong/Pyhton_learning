@@ -511,3 +511,29 @@ books函数中，使用ORM 方式获取了Name表中的所有数据，使用rend
 python manage.py inspectdb
 将数据库中表结构转换成模型。
 元数据，class Meta,  中的数据不属于数据库中的字段，managed=False， 当执行makemigration等操作时，会忽略该表。db_table 可以用来指定表名。
+
+---
+## Django Web 管理界面
+
+管理页面的设计哲学：
+* 管理后台是一项缺乏创造性和乏味的工作，Django 全自动地根据模型创建后台界面。
+* 管理界面不是为了网站的访问者，而是管理者准备的。
+
+### 创建Web 管理界面 
+首先要创建管理员帐号，
+#### 管理员帐号
+通过请求 http://127.0.0.1:8000/admin ，可进入登录界面。
+$python manager.py createsuperuser
+
+
+
+
+
+
+
+
+
+
+
+
+
