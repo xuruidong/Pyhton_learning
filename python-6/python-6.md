@@ -401,6 +401,7 @@ AttributeError: 'str' object has no attribute 'decode'
 注释掉相关代码。
 
 3. 提示 No changes detected
+在执行 python manage.py makemigrations 时提示 No changes detected，
 在 INSTALLED_APPS 中注册自己写的APP，
 
 
@@ -520,10 +521,106 @@ python manage.py inspectdb
 * 管理界面不是为了网站的访问者，而是管理者准备的。
 
 ### 创建Web 管理界面 
-首先要创建管理员帐号，
-#### 管理员帐号
-通过请求 http://127.0.0.1:8000/admin ，可进入登录界面。
-$python manager.py createsuperuser
+
+在settings.py 中，INSTALLED_APPS，django.contrib.admin 就是内置的后台管理系统。
+保证数据库连接正常。 
+
+执行 python manage.py migrate，将管理系统相关数据库同步到数据库中。
+添加管理员帐户，设置密码： $python manage.py createsuperuser
+将Model导入到管理系统中：
+例如在 index app 中，index/admin.py中, 导入模型，然后注册。
+```
+from .models import Person
+admin.site.register(Person)
+```
+之后通过请求 http://127.0.0.1:8000/admin ，可进入登录界面。可以对Model进行CRUD管理。
+查看官方文档，了解更多。
+
+### 表单
+
+在使用Django 的后台管理界面管理Model 时，“save” 是一个提交的操作，用来将数据写入数据库。这个就是 HTML 的表单功能。提交时，一般使用的是 HTTP post 方式。  
+一个表单实例 test.html：
+```
+<form action="result.html" method="post">
+	username:<input type="text" name="username" /><br>
+	password:<input type="password" name="password" /><br>
+	<input type="submit" value="登录">
+</form>
+```
+提交到 result.html ，点击“登录”后会跳转到 result.html.  
+实现表单时重复性工作，Django 可以自动生成。
+表单提交数据到达后端时，需要进行数据的校验，然后存到数据库中。对数据的校验可以在请求中间件中进行，将不合法的数据过滤等操作。Django 使用 Form 对象定义表单，可以用Python 代码生成HTML 代码。由于Django 可以控制生成的表单，所以更容易将 form 和后边的Model 进行关联。  
+
+一个 form 示例，form.py:
+```
+from django import forms
+class LoginForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput, min_length=6)
+```
+其他的表单字段，查阅[文档](https://docs.djangoproject.com/zh-hans/2.2/topics/forms/)  
+[Form fields](https://docs.djangoproject.com/zh-hans/2.2/ref/forms/fields/)  
+
+定义好的form 如何呈现在 HTML 中？
+比如要实现的登录功能，向用户展示登录表单界面，
+1. 实现表单类，如上面的 LoginForm
+2. 首先，用户打开登录界面的 url: http://127.0.0.1:8000/login，在Django 中要定义好 urlpatterns, 并实现对应的 view.
+   ```
+    from . import form
+    # Create your views here.
+
+    def login(request):
+        if request.method == "GET":
+            login_form = form.LoginForm()
+            return render(request, 'login.html', {"form": login_form})
+        return HttpResponse("hello login")
+   ```
+   这里先实现获取登录界面并显示表单。想要在 html 中显示自定义的form, 就要使用 view ,将form 实例传参给html.
+3. 实现 html:
+   ```
+   <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset=UTF-8">
+        <TITLE>Title</TITLE>title>
+    </head>
+    <body>
+    <p>Input you username and password</p>
+    <form action="/login/" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="登录">
+    </form>
+    </body>
+    </html>
+   ```
+   在 html 中，提交到 /login, 使用 POST 方式。 在form 元素中， 引入 csrf_token 和 form。这里的 form 就是指 view 中定义的 login_form。action 的地址，后面是否以“/” 结尾，有区别。没有“/”， 可能会报错：You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set
+4. 提交表单部分
+   接下来实现提交表单后的内容。 由于还是提交到 login， 与获取页面时的 url 相同，所以还是在view::login 中实现相应的逻辑。由于提交表单使用的是POST方式，所以根据 request.method 来判断。
+   。。。
+
+### 表单 CSRF 功能
+[官方文档](https://docs.djangoproject.com/zh-hans/2.2/ref/csrf/)
+在提交表单时，可能会出现 403 Forbidden错误。 可能是Django 认为POST请求时CSRF. CSRF(跨站请求攻击)，会导致网站被恶意利用或者泄露用户个人信息等危害。为了防止CSRF, Django 默认使用了中间件 'django.middleware.csrf.CsrfViewMiddleware' 进行CSRF 验证， 当发现跨站请求，就会返回403.
+在html 页面中增加 {% csrf_token %}，
+--- 会在POST 请求的页面加上 scrf token,  所以在之前的实例中，html 页面中加入了 csrf_token
+在html 页面中增加 {% csrf_token %}，为什么会防止跨站攻击？ 这个功能是在中间件中实现的。 --- 
+csrf 也被称作 one click attack,或者叫session reading. Django 为了防御CSRF, 在用户提交表单时，表单会加入一个 csrf token，
+CSRF 指验证POST请求。  
+关闭 'django.middleware.csrf.CsrfViewMiddleware'，则取消全局验证。此时，在view 函数上添加@csrf_protect , 则会对此 view 进行验证。当中间件生效，在view 函数上添加 @csrf_exempt 则对此view 不进行验证。
+```
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+@csrf_exempt
+def result(request):
+    pass
+
+@csrf_protect
+def ...
+```
+
+使用Ajax 进行POST 提交时，也需要csrf_token
+
+### 用户认证
 
 
 
@@ -537,3 +634,6 @@ $python manager.py createsuperuser
 
 
 
+
+
+end
