@@ -622,11 +622,59 @@ def ...
 
 ### 用户认证
 
+Django 默认集成了用户认证功能，如用户注册，创建相应的数据库表，用户校验，会话等功能。
 
+#### 用户注册
+使用 Django 提供的Shell，`python manage.py shell`,
+``` 
+from django.contrib.auth.models import User
+user = User.objects.create_user('jerry', 'jerry@abc.com', 'jerrypasswd')
+user.save()
+```
+先导入验证模块，引入User，
+User.objects 就是 ORM 查询管理器 ，使用查询管理器的create_user 来创建一个对象，必须要传参 3个，
+保存注册信息到数据库.
+可以使用 authenticate(username = 'jerry', password = 'jerrypasswd') 来验证，验证成功，返回一个User对象，验证失败，返回空。
+在 settings.py 中可以看到，实现验证功能的中间件是 django.contrib.auth.middleware.AuthenticationMiddleware, 当进行migrate 时进行迁移，在数据库中创建相应的表。
 
+#### 在view 中的代码实现
+```
+from django.shortcuts import render
+from django.http import HttpResponse
+from . import form
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as login2
+# Create your views here.
 
-
-
+def login(request):
+    if request.method == "GET":
+        login_form = form.LoginForm()
+        return render(request, 'login.html', {"form": login_form})
+    else:
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
+        login_form = form.LoginForm(request.POST)
+        if login_form.is_valid():
+            cd = login_form.cleaned_data
+            user = authenticate(
+                username=cd['username'], password=cd['password'])
+            if (user):
+                login2(request, user)
+                return HttpResponse("successful")
+            else:
+                return HttpResponse("hello login, %s, failed" % username)
+        else:
+            return HttpResponse("hello login, %s, failed" % username)
+```
+对于POST 请求发送的表单，使用request.method 来区分请求方法。
+为了获取表单信息， 对表单进行实例化，并对表单信息进行验证（login_form.is_valid()）。  
+使用 cleaned_data 可以获得表单的返回值。也可以使用以下方法获取：
+```
+username = request.POST.get('username', '')
+password = request.POST.get('password', '')
+```
+authenticate() 可以用来进行用户名密码验证，会去数据库中查询数据进行对比。
+login() 函数用来登录，实现会话功能。
 
 
 
