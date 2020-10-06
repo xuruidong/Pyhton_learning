@@ -42,6 +42,13 @@ urllib使用起来不如requests方便。
 from bs4 import BeautifulSoup as bs
 ```
 
+bs4 是包名， 在`__init__.py`中实现了类BeautifulSoup。  
+`__all__ = ['BeautifulSoup']`, 当使用 `from bs4 import *` 时，只能使用 BeautifulSoup， 不能使用 BeautifulStoneSoup 等。  
+`from bs4 import BeautifulStoneSoup` 是可以的。
+
+在普通模块中的`__all__`, 来限制 当使用 `from xxx import *` 时被导入的变量、函数、类等属性。  
+在包的`__init__.py`中，也是同样的作用。
+
 [Beautiful Soup 4.2.0 文档](https://www.crummy.com/software/BeautifulSoup/bs4/doc/index.zh.html)
 
 参数：
@@ -62,14 +69,14 @@ def __init__(self, markup="", features=None, builder=None,
 打开浏览器调试界面，选择“元素”标签。
 然后点击我们要关注的信息，比如“上映日期”1994-09-10。此时右侧出现对应的html代码。
 ![浏览器演示1](xpath-1.jpg)
-如果我们使用BeautifulSoup查找，要找到span标签，content。
+如果我们使用BeautifulSoup查找，要找到span标签，限制属性class == p1, 然后获得content。
 我们在代码侧，鼠标右键---复制---复制Xpath。
-使用Xpath也可以匹配到span标签。 win+f打开搜索栏，输入拷贝的XPath，此时对应的标签会高亮显示。
+使用Xpath也可以匹配到span标签。 ctrl+f打开搜索栏，输入拷贝的XPath，此时对应的标签会高亮显示。
 
 ### 在python中使用XPath
-首先要导入lxml.etree
-使用lxml.etree.HTML()来处理html页面内容。
-使用 lxml.etree.HTML().xpath()来选择对应的内容。
+首先要导入lxml.etree  
+使用lxml.etree.HTML()来处理html页面内容。  
+使用 lxml.etree.HTML().xpath()来选择对应的内容。  
 ```
 import lxml.etree
 def xpath_test():
@@ -85,7 +92,8 @@ def xpath_test():
     summary = selector.xpath('//*[@id="link-report"]/span[1]/span/text()')
     print ("summary: %s" % summary)
 ```
-xpath传参时，从浏览器中复制出的xpath+text()方法。意思是取标签的内容。
+xpath传入的参数，是从浏览器中复制出的xpath+text()方法。意思是取标签的内容。
+
 
 ### 使用pandas保存数据
 导入pandas库
