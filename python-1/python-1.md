@@ -122,8 +122,10 @@ def page_turn():
             '//*[@id="content"]/div/div[1]/ol/li[2]/div/div[2]/div[1]/a/span[1]/text()')
         print (name)
 ```
+推导式  
 
 ## Python 基础语法
+dir(), help(),   
 [Python 数据结构](https://docs.python.org/zh-cn/3/tutorial/datastructures.html)<br/>
 [Pyhton 其他流程控制工具](https://docs.python.org/zh-cn/3/tutorial/controlflow.html)<br/>
 [Pyhton 中的类](https://docs.python.org/zh-cn/3/tutorial/classes.html)<br/>
@@ -159,6 +161,21 @@ Spider对结果的处理，有两个方向，一个时Item Pipeline, 一个是Sc
 
 一般使用scrapy,只需要修改爬虫器和管道即可。
 
+[官方文档](https://docs.scrapy.org/en/latest/topics/architecture.html)
+![Data Flow](scrapy_architecture_02.png)
+
+The data flow in Scrapy is controlled by the execution engine, and goes like this:
+
+1. The Engine gets the initial Requests to crawl from the Spider.
+2. The Engine schedules the Requests in the Scheduler and asks for the next Requests to crawl.
+3. The Scheduler returns the next Requests to the Engine.
+4. The Engine sends the Requests to the Downloader, passing through the Downloader Middlewares (see process_request()).
+5. Once the page finishes downloading the Downloader generates a Response (with that page) and sends it to the Engine, passing through the Downloader Middlewares (see process_response()).
+6. The Engine receives the Response from the Downloader and sends it to the Spider for processing, passing through the Spider Middleware (see process_spider_input()).
+7. The Spider processes the Response and returns scraped items and new Requests (to follow) to the Engine, passing through the Spider Middleware (see process_spider_output()).
+8. The Engine sends processed items to Item Pipelines, then send processed Requests to the Scheduler and asks for possible next Requests to crawl.
+9. The process repeats (from step 1) until there are no more requests from the Scheduler.
+
 ### Scrapy使用
 * scrapy安装： pip install scrapy
 * 创建scrapy工程： scrapy startproject spiders  # 创建一个名为spiders的工程
@@ -177,16 +194,11 @@ spider1
     ├── __init__.py
     ├── items.py
     ├── middlewares.py
-    ├── pipelines.py
-    ├── __pycache__
-    │   ├── __init__.cpython-37.pyc
-    │   └── settings.cpython-37.pyc
+    ├── pipelines.py 
     ├── settings.py
     └── spiders
         ├── __init__.py
-        ├── movies.py
-        └── __pycache__
-            └── __init__.cpython-37.pyc
+        └── movies.py
 ```
 这些文件和scrapy架构中模块的对应关系：
 |Python文件 |    说明    |
@@ -195,7 +207,7 @@ spider1
 |scrapy.cfg |项目配置文件|
 |items.py   |定义所爬取记录的数据结构|
 |movies.py  |编写爬虫逻辑|
-|pipelines.py|设置保持位置|
+|pipelines.py|设置保存位置|
 
 #### scrapy.cfg
 ```
@@ -233,7 +245,7 @@ class MoviesSpider(scrapy.Spider):
 + import scrapy 不但引入了scrapy库自身的一系列功能，还引入了item.py, pipelines.py等这些我们自己定义的这些信息。
 + 建议类首字母大写，方法首字母小写（PEP8）
 + name = 'movies',   在运行爬虫时，传入的爬虫名字一定要是'movies'，$scrapy crawl movies
-+ allowed_domains， 爬取范围
++ allowed_domains， 爬取范围被限制在 allowed_domains 内。
 + start_urls，爬取入口。 scrapy使用了Twisted异步框架，需要一个启动请求。scrapy 根据start_urls来设置一些http头。
 + parse方法的参数response是 start_urls通过调度器和下载器发起了一次请求之后得到的响应信息
 
@@ -259,7 +271,7 @@ class MoviesSpider(scrapy.Spider):
 ['_DEFAULT_ENCODING', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__slots__', '__str__', '__subclasshook__', '__weakref__', '_auto_detect_fun', '_body', '_body_declared_encoding', '_body_inferred_encoding', '_cached_benc', '_cached_decoded_json', '_cached_selector', '_cached_ubody', '_declared_encoding', '_encoding', '_get_body', '_get_url', '_headers_encoding', '_set_body', '_set_url', '_url', 'body', 'body_as_unicode', 'cb_kwargs', 'certificate', 'copy', 'css', 'encoding', 'flags', 'follow', 'follow_all', 'headers', 'ip_address', 'json', 'meta', 'replace', 'request', 'selector', 'status', 'text', 'url', 'urljoin', 'xpath']
 ```
 
-爬虫默认的行为是请求start_urls， 然后有parse处理响应信息。
+爬虫默认的行为是请求start_urls， 然后由parse处理响应信息。
 
 #### 翻页爬取电影列表
 爬虫的默认行为不符合要求。需要在parse前完成翻页功能。在scrapy中有start_requests方法，引擎会自动调用该方法，并且只会被调用一次。start_requests的默认实现是读取start_urls，生成Request对象，发送给引擎，引擎再指挥其他组件向网站服务器发起请求。所以这里需要重载start_requests方法。
@@ -402,8 +414,8 @@ XPath路径匹配， 以“//”，“/”， “.”, ".."开头，
 表达式|说明|
 |-|-|
 |nodename|选取此节点的所有子节点|
-|/|从根节点开始找，
-|//|从上到下找，标签为div,并且包含属性class,class名为hd|
+|/|从根节点开始找，第一级|
+|//|从匹配选择的当前节点开始查找，而不考虑它们的位置，选择全部的匹配节点|
 |.|从当前位置开始向下找|
 |..|从平级位置开始找|
 
@@ -466,6 +478,7 @@ XPath路径匹配， 以“//”，“/”， “.”, ".."开头，
 
 
 ### 在scrapy中使用选择器
+[文档](https://docs.scrapy.org/en/latest/topics/selectors.html#working-with-xpaths)
 * scrapy集成了页面解析工具，selector 选择器，使用选择器时需要导入`from scrapy.selector import Selector`
 * 创建Selector对象，需要传入response对象，
 * 使用Selector的xpath方法，传参xpath 字符串，
@@ -474,6 +487,9 @@ XPath路径匹配， 以“//”，“/”， “.”, ".."开头，
 ['__add__', '__class__', '__contains__', '__delattr__', '__delitem__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getslice__', '__getstate__', '__gt__', '__hash__', '__iadd__', '__imul__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__module__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__reversed__', '__rmul__', '__setattr__', '__setitem__', '__sizeof__', '__slots__', '__str__', '__subclasshook__', '__weakref__', 'append', 'attrib', 'clear', 'copy', 'count', 'css', 'extend', 'extract', 'extract_first', 'get', 'getall', 'index', 'insert', 'pop', 're', 're_first', 'remove', 'reverse', 'sort', 'xpath']
 ```
 * 遍历xpath返回值，继续查找。 获取文本用text(),获取属性用@
+* 使用 extract 等方法获取内容
+
+
 ```
     def parse(self, response):
         items = []
@@ -551,4 +567,9 @@ chain()函数返回一个生成器对象
 
 ## 推导式
 用来生成list,tuple,dict
-生成tuple时要显示指定tuple
+生成tuple时要显示指定tuple， 如果不显示指定 tuple, 则会得到一个生成器对象。 
+```
+g = (i for i in range(10))
+print (type(g))
+# <class 'generator'>
+```
