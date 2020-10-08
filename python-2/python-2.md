@@ -1,7 +1,7 @@
 # Python-2 进击的菜鸟
 
 ## 异常的捕获
-异常并不完全是错误。
+异常并不一定是错误。
 正如[python-1](../python-1/python-1.md)中yield部分中的例子，生成器对象在最后一次next操作时，会发生StopIteration异常。
 
 ### traceback
@@ -35,7 +35,7 @@ def traceback_test():
 ### 异常处理机制
 * 异常也是一个类
 * 异常捕获过程
-  > 异常类把错误消息打包到一个对象
+  > 异常类把错误消息打包到一个Traceback对象
   > 该对象会自动查找调用栈信息
   > 直到运行系统找到明确声明如何处理这些类异常的位置
 * 所有异常继承自BaseException
@@ -126,6 +126,10 @@ c()
 [Documentation ](https://pymysql.readthedocs.io/en/latest/)
 [PyMySQL tutorial](http://zetcode.com/python/pymysql/)
 python 的类型提示（type hint）,并不是对类型的约束，也不是定义，
+```
+def func3(s: str):
+    print (s)
+```
 
 ### MySQL的编码
 utf8mb4  utf8  utf-8 区别
@@ -207,7 +211,7 @@ def cookies_test():
 ```
 * `requests.Session()` 创建一个session，使两次请求在一个session内。在同一个Session实例发出的请求之间保持cookies。requests默认开启session功能，
   使用urllib3 的connection pooling功能，向同一主机发送多个请求，复用TCP连接
-* 通过get httpbin.org/cookies/set 来设置cookies, 然后通过访问httpbin.org/cookies来查看cookies
+* 通过get httpbin.org/cookies/set 来设置cookies, 然后通过访问 httpbin.org/cookies 来查看cookies
 * requests默认会接受重定向，如果使用默认设置，第一种方式可省略第二次请求
 * 这里可以使用with语句
 
@@ -253,7 +257,7 @@ def big_file_download(url):
 * 安装tesseract
   https://github.com/tesseract-ocr/tesseract/wiki
 * MSYS2 可能会将tesseract安装到mingw64/bin下， 添加到PATH即可
-* 设施环境变量 TESSDATA_PREFIX为 D:\msys64\mingw64\share\tessdata
+* 设置环境变量 TESSDATA_PREFIX为 D:\msys64\mingw64\share\tessdata
 * 考虑到环境变量生效问题，可在命令行下临时设置 TESSDATA_PREFIX
   ```
   set TESSDATA_PREFIX=D:\msys64\mingw64\share\tessdata
@@ -390,7 +394,7 @@ class MoviesSpider(scrapy.Spider):
 windows 可以在Internet属性中设置代理。
 * 设置代理后，在settings.py中编辑DOWNLOADER_MIDDLEWARES，填写需要加载的中间件。
   加载'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware'
-HttpProxyMiddleware在Python37\Lib\site-packages\scrapy\downloadermiddlewares\httpproxy.py
+HttpProxyMiddleware 在 Python37\Lib\site-packages\scrapy\downloadermiddlewares\httpproxy.py
 如果是windows, 读取注册表， linux读环境变量
 * 下载中间件可以指定优先级， 根据优先级来确定加载顺序。如果需要屏蔽某个中间件，可以将优先级值写为`None`
 * 如果要加载自己写的中间件，请转到middlewares.py房间， 编写中间件类。建议继承默认提供的类，然后再进行实现。
