@@ -395,21 +395,28 @@ windows 可以在Internet属性中设置代理。
 * 设置代理后，在settings.py中编辑DOWNLOADER_MIDDLEWARES，填写需要加载的中间件。
   加载'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware'
 HttpProxyMiddleware 在 Python37\Lib\site-packages\scrapy\downloadermiddlewares\httpproxy.py
-如果是windows, 读取注册表， linux读环境变量
+如果是windows, 读取注册表， linux读环境变量，将代理设置保存到 self.proxies 中，通过在 _set_proxy() 中设置 request.meta['proxy']，来设置代理。
 * 下载中间件可以指定优先级， 根据优先级来确定加载顺序。如果需要屏蔽某个中间件，可以将优先级值写为`None`
-* 如果要加载自己写的中间件，请转到middlewares.py房间， 编写中间件类。建议继承默认提供的类，然后再进行实现。
+* 如果要加载自己写的中间件，请转到 middlewares.py房间， 编写中间件类。建议继承默认提供的类，然后再进行实现。
 
+```
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy_porject.middlewares.ScrapyPorjectDownloaderMiddleware': None,
+    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 400,
+ }
+```
+scrapy 默认在 middlewares.py 中实现了两个中间件，可参考。
 
 ### 自己实现下载中间件
 自定义中间件需要实现的功能：
-读取settings配置
+读取settings配置，模仿 HttpProxyMiddleware ，为爬虫设置随机代理。
 
 ##### 编写一个下载中间件，需要实现的4个主要方法：
 |方法|说明|
 |-|-|
 |`process_request(request, spider)`|request对象经过下载中间件时会被调用，优先级高先调用|
 |`process_response(request, response, spider)`|response对象经过下载中间件时会被调用，优先级高后调用|
-|`process_exception(request, exception, spider)`|当process_respinse()和process_request()抛出异常时会被调用|
+|`process_exception(request, exception, spider)`|当process_response()和process_request()抛出异常时会被调用|
 |`from_crawler(cls, crawler)`|使用crawler来创建中间件对象，并**必须**返回一个中间件对象。一般在这里做一些初始化工作|
 
 ##### settings.py配置书写规则：
@@ -418,7 +425,7 @@ HttpProxyMiddleware 在 Python37\Lib\site-packages\scrapy\downloadermiddlewares\
 ##### 自定义中间件实现流程
 * 在settings.py中实现所需的配置项
 * 在middlewares.py中实现中间件类
-* 在DOWNLOADER_MIDDLEWARES中填写中间件导入路径，设置优先级。路径为  工程名.middlewares.中间件类名
+* 在DOWNLOADER_MIDDLEWARES中填写中间件导入路径，设置优先级。路径为  工程名.middlewares.中间件类名。可以参考scrapy 默认实现的下载中间件的导入写法
 
 
 ##### 随机代理中间件的实现
@@ -461,6 +468,8 @@ HttpProxyMiddleware 在 Python37\Lib\site-packages\scrapy\downloadermiddlewares\
         auth_encoding = crawler.settings.get('HTTPPROXY_AUTH_ENCODING')
         return cls(auth_encoding, proxy_list)
   ```
+  crawler.settings.get 的实现
+  在 类方法 from_crawler 中将 proxy_list 传递给 init
 + 实现_set_proxy
   ```
     def _set_proxy(self, request, scheme):
@@ -510,3 +519,8 @@ scrapy-redis很好地实现了scrapy 和 Redis 的集成。
 + 使用了 RedisSpider 类代替了 Spider 类
 + Scheduler 的 queue 由 Redis 实现
 + item pipline 由 Redis 实现
+
+安装： pip install scrapy-redis
+配置并启动 redis
+settings.py 中进行设置 redis 地址，scheduler QUEUE, 去重过滤器，
+
