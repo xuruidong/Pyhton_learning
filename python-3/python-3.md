@@ -332,31 +332,117 @@ map 以 list 形式返回结果， imap 返回结果的迭代器
 可以通过is_alive() 方法获取线程运行状态
 getName()
 
+### 锁
+#### 互斥锁
 
-### 可重入锁 threading.RLock()
+#### 可重入锁 threading.RLock()
 A reentrant lock must be released by the thread that acquired it. Once a
     thread has acquired a reentrant lock, the same thread may acquire it
     again without blocking; the thread must release it once for each time it has acquired it.
-使得函数可以递归调用
+RLock 可以嵌套，使得函数可以递归调用
 
-### Condition
+#### Condition
+[Condition Objects](https://docs.python.org/3.7/library/threading.html#condition-objects)
 
-### BoundedSemaphore
+wait_for 方法挺奇怪，不知道怎么用。
+
+```
+def func(conn,i):
+    # print(i)
+    while True:
+        conn.acquire()
+        conn.wait()
+        print(i+100)
+        conn.release()
+
+def condition_test():
+    c = threading.Condition()
+    for i in range(5):
+        t = threading.Thread(target=func,args=(c,i,))
+        t.start()
+    while True:
+        r = input(">>>")
+        if r == "yes":
+            c.acquire()
+            c.notify()
+            c.release()
+            print ("notify")
+```
+在执行 wait(),notify() 时，必须先加锁。
 
 
-### Event
+#### BoundedSemaphore
+This is one of the oldest synchronization primitives in the history of computer science, invented by the early Dutch computer scientist Edsger W. Dijkstra (he used the names P() and V() instead of acquire() and release()).
 
-### timer
+A semaphore manages an internal counter which is decremented by each acquire() call and incremented by each release() call. The counter can never go below zero; when acquire() finds that it is zero, it blocks, waiting until some other thread calls release().
+
+#### Event
+
+#### timer
+
+#### Barrier Objects
 
 
 ### queue
+queue.Queue()
+put()
+get()
+task_done()
+qsize()
+empty()
+full()
 
+PriorityQueue() put操作时指定优先级
 ### dequeue
 
 ### deamon
 观察状态
 
 ### 线程池
+一般的线程池：
+from multiprocessing.dummy import Pool as ThreadPool
+
+```
+from multiprocessing.dummy import Pool as ThreadPool
+
+def handle(n):
+    print("start %d" % n)
+    time.sleep(0.5)
+    print("end %d" % n)
+    return 100 + n
+    
+def threadPoolTest():
+    tmp = [1, 2, 3, 4, 5, 6]
+    pool = ThreadPool(4)
+    result = pool.map(handle, tmp)
+    pool.close()
+    pool.join()
+    print ("pool.join")
+    for r in result:
+        print (r)
+```
+
+并行任务的高级封装（Python 3.2 以后）：
+from concurent.futures import ThreadPoolExecutor
+
+```
+from concurrent.futures import ThreadPoolExecutor
+
+def futuresTest():
+    tmp = [1, 2, 3, 4, 5, 6]
+    with ThreadPoolExecutor(3) as executor:
+        executor.submit(handle, tmp)
+
+    print ("submit test end")
+    time.sleep(1)
+
+    with ThreadPoolExecutor(3) as executor2:
+        executor2.map(handle, tmp)
+
+    print ("map test end")
+    time.sleep(1)
+```
+如果执行函数中出现异常，不会有任何提示？
 
 
 
@@ -373,9 +459,7 @@ A reentrant lock must be released by the thread that acquired it. Once a
 
 
 
-
-
-
+```
 jk:
 root@ubuntu:~# cat /sys/class/net/tap1/tun_flags
 0x1901 能通过这个flag间接看出来
@@ -388,4 +472,4 @@ Hsu Jui-tung:
 
 jk:
 貌似没有，代码里写死的8个queue
-
+```
