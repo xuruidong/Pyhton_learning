@@ -90,8 +90,8 @@ ITEM_PIPELINES = {
 MYSQL_CONF = {
     'host': '192.168.1.10',
     'port': 3306,
-    'user': 'aaaaa',
-    'password': 'bbbbb',
+    'user': 'think',
+    'password': 'difference',
     'charset': 'utf8mb4',
-    'database': 'maoyan'
+    'database': 'smzdm'
 }

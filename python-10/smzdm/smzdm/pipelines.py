@@ -31,13 +31,12 @@ class SmzdmPipeline:
     def process_item(self, item, spider):
         #data = [[item["title"], item["film_type"], item["date"]]]
         if (self.cursor):
-            print ("execute ------------")
             try:
-                sqlstr = ('insert into movies (title, type, date) values'
-                          '(\"%s\", \"%s\", \"%s\");'
-                         % (item["title"], item["film_type"], item["date"]))
+                sqlstr = ('insert into phone (name, comment) values'
+                          '(\"%s\", \"%s\");'
+                         % (item["title"], item["comment"]))
                 self.cursor.execute(sqlstr)
-                print (sqlstr)
+                # print (sqlstr)
                 self.con.commit()
             except Exception as e:
                 print ("======= mysql exception ======")
