@@ -147,7 +147,7 @@ Django path() 可以接收四个参数，分别是两个必选参数：route、v
 `path(route, view, kwargs=None, name=None)`
 
 
-实现 访问http://127.0.0.1:8000 返回固定的字符串
+**实现 访问http://127.0.0.1:8000 返回固定的字符串**
 在urls.py中， urlpatterns=[] 
 ```
 urlpatterns = [
@@ -218,7 +218,8 @@ Django 支持URL 设置变量，变量类型包括：
 * path
 
 使用方法： path( <变量类型：变量名>, 处理函数 )
-`path('<int:year>', views.myyear)` 表示传入的参数会赋值给year变量，如果不是纯数字形式，会报错。url path 是整数时匹配。
+`path('<int:year>', views.myyear)` 表示传入的参数会赋值给year变量，如果不是纯数字形式，会报错。url path 是整数时匹配。myyear 函数必须是 def myyear(request, year)， 写成def myyear(request) 会报错。
+
 __Coding Time：__
 在index/urls.py 中，urlpatterns 中添加：
 ```
@@ -232,13 +233,13 @@ urlpatterns = [
 def year(request, year):
 	return HttpResponse(year+1)
 ```
-第一个参数必须是 request, 第二个参数只接收来的参数。
+第一个参数必须是 request, 第二个参数是接收来的参数。
 如果访问的url path 不能匹配到 urlpatterns， 会返回 404.
 
 对于路径模式 path('<int:year>/<str:name>', views.name), name 函数要接收多个参数，可以使用 **kwargs 
 ```
 def name(request, **kwargs):
-	print (kwargs)
+	print (kwargs)              # {'year': 1234, 'name': 'abc'}
 	return HttpResponse(kwargs['name'])
 ```
 
@@ -271,7 +272,7 @@ __模板怎么配置？__
 如果没有在INSTALLED_APPS 中注册应用， 则需要在 TEMPLATES，DIRS 中设置模板路径， 'DIRS': [BASE_DIR+"/index/Templates"]
 
 ### 自定义匹配规则
-使用自定义类型， 需要使用 register_converter 进行注册。比如自定义类型名为 myint, 
+使用自定义类型， 需要使用 register_converter 进行注册。比如自定义类型名为 myint, 在index/urls.py中导入 register_converter
 ```
 from django.urls import register_converter
 register_converter(IntConverter, 'myint') 
@@ -290,6 +291,13 @@ class IntConverter():
 ```
 类中必须实现三个部分， regex 是匹配的正则表达式，to_python 将从url获取到的值转到 python ， 
 
+在 urlpatterns 中设置对应关系：
+```
+urlpatterns = [
+    path('', views.index),
+    path('<myint:mm>', views.myint)
+]
+```
 views.py
 ```
 def myint(request, year):
