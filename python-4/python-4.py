@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-#from sklearn import datasets
+from sklearn import datasets
 import os
 import pandas as pd
 
@@ -7,8 +7,17 @@ import pandas as pd
 def sklearn_test():
     iris = datasets.load_iris()
     print (type(iris))
+    print (iris)
+
+    x, y = iris.data, iris.target
+
+    # print (x)
+    # print (y)
+    
     print (iris.feature_names)
     print (iris.target_names)
+    
+    
 
 
 def file_path_test():
@@ -35,6 +44,13 @@ def series_test():
     
     print (s1.values.tolist())
     
+    emails = pd.Series(
+        ['abc at aaa.com', 'admin@aa.com', 'aaa@mmm', 'ab@acb.com'])
+    import re
+    pattern = '[A-Za-z0-9._]+@[A-Za-z0-9._]+\\.[A-Za-z]{2,5}'
+    mask = emails.map(lambda x: bool(re.match(pattern, x)))
+    print (emails[mask])
+    
 
 def DateFrame_test():
     data = [['a','b','c'], ['d','e','f']]
@@ -44,6 +60,8 @@ def DateFrame_test():
     d.columns = ['aa', 'bb', 'cc']
     d.index = ['A', 'B']
     print(d)
+
+    print (type(d.values))
 
 
 def pd_read_test():
@@ -246,12 +264,12 @@ if __name__ == "__main__":
     # sklearn_test()
     # file_path_test()
     # series_test()
-    # DateFrame_test()
+    DateFrame_test()
     # pre_proc_test()
     # pandas_adjust_test()
     #group_test()
     # output_test()
     # draw_test()
-    test()
+    # test()
     print ("===  end  ===")
     

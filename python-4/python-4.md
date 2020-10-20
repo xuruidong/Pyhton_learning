@@ -3,15 +3,50 @@
 
 ## pandas 简介
 
-[Pandas 中文](https://www.pypandas.cn/)
+[Pandas 中文](https://www.pypandas.cn/)  
+pandas 是对 numpy 的封装
 
 ### 测试数据来源
 sklearn 提供了机器学习的数据集，暂时免去数据清洗的过程
 
+```
+from sklearn import datasets
+
+def sklearn_test():
+    iris = datasets.load_iris()
+    print (type(iris))
+    print (iris)
+
+    x, y = iris.data, iris.target
+    # print (x)
+    # print (y)
+
+    print (iris.feature_names)
+    print (iris.target_names)
+```
+
+输出：
+```
+<class 'sklearn.utils.Bunch'>
+{'data': array([[5.1, 3.5, 1.4, 0.2],
+       [4.9, 3. , 1.4, 0.2],
+       [4.7, 3.2, 1.3, 0.2],
+       ...
+       [5.9, 3. , 5.1, 1.8]]), 'target': array([0, 0, 0, 0, 0, 0......
+       , 2, 2, 2, 2, 2, 2, 2, 2]), 
+       'frame': None, 
+       'target_names': array(['setosa', 'versicolor', 'virginica'], dtype='<U10'), 'DESCR': '.. _iris_dataset:\n\nIris plants dataset\n--------------------\n\n**D ...', 
+       'feature_names': ['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)'], 
+       'filename': 'd:\\Program Files\\Python\\Python37\\lib\\site-packages\\sklearn\\datasets\\data\\iris.csv'}
+['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)']
+['setosa' 'versicolor' 'virginica']
+
+```
+
 * 引入数据集 `from sklearn import dateset`
 * 加载鸢尾花数据 `iris = datasets.load_iris()`, 其他数据集如 load_Boston 波士顿房价 回归， load_digits 手写体 分类
-* 返回的数据类型是 sklearn.utils.Bunch， 继承 dict 的类。使用 `x, y = iris.data, iris.target` 将数据和目标分离， x是花瓣特征（长短宽窄），y是特征对应的花的种类。
-* 使用`iris.feature_names` 可以获得特征名， `iris.target_names` 获得种类名称
+* 返回的数据类型是 sklearn.utils.Bunch， 继承 dict 的类, 所以它也是一个字典，其中data 和 target 是其中的两个键。使用 `x, y = iris.data, iris.target` 将数据和目标分离， x是花瓣特征（长短宽窄），y是特征对应的花的种类。这个数据集就是每种花瓣特征数据<-->对应的花的种类。
+* 使用`iris.feature_names` 可以获得特征名称， `iris.target_names` 获得种类名称
 * 使用训练集和测试集分类功能， 可以把x y按照一定的比例来划分，
 * ```
     from sklearn.model_selection import train_test_split
@@ -42,7 +77,7 @@ def series_test():
     ret = pd.Series(['a', 'b', 'c'])
     print (type(ret))
     print (ret)
-    print (dir(ret))
+    # print (dir(ret))
     
     s1 = pd.Series(['a', 'b', 'c'], index=['A', 'B', 'C'])
     print(s1)
@@ -54,10 +89,51 @@ def series_test():
     
     print (s1.values.tolist())
 ```
+输出：
+```
+<class 'pandas.core.series.Series'>
+0    a
+1    b
+2    c
+dtype: object
+
+A    a
+B    b
+C    c
+dtype: object
+A    a
+B    b
+C    c
+dtype: object
+
+Index(['A', 'B', 'C'], dtype='object')
+['a' 'b' 'c']
+
+['a', 'b', 'c']
+```
 * 可以使用 list 创建
+* 建议将 Series 当作一列来看待
 * 创建时可以自定义索引，其中有两种方法，字典或指定index
+* 使用index 会提升查询性能
+  * 如果index 唯一，pandas 会使用hash表优化，查询时间复杂度O(1)
+  * 如果index有序不唯一，pandas 会使用二分查找算法
+  * 完全随机，遍历查找， O(N)
 * 取所有索引 `s.index`, 所有值 `s.values`
 * 将值转为 Python 的 list `s.values.tolist()`
+
+```
+emails = pd.Series(
+        ['abc at aaa.com', 'admin@aa.com', 'aaa@mmm', 'ab@acb.com'])
+    import re
+    pattern = '[A-Za-z0-9._]+@[A-Za-z0-9._]+\\.[A-Za-z]{2,5}'
+    mask = emails.map(lambda x: bool(re.match(pattern, x)))
+    print (emails[mask])
+```
+
+```
+1    admin@aa.com
+3      ab@acb.com
+```
 
 ### DataFrame
 ```
@@ -69,9 +145,24 @@ def DateFrame_test():
     d.columns = ['aa', 'bb', 'cc']
     d.index = ['A', 'B']
     print(d)
+
+    print (type(d.values))
+```
+输出：
+```
+   0  1  2
+0  a  b  c
+1  d  e  f
+
+  aa bb cc
+A  a  b  c
+B  d  e  f
+
+<class 'numpy.ndarray'>
 ```
 * 可以使用二维 list 创建 DataFrame
 * 同样可以设置索引
+* DataFrame 和 Series 的值的类型都是 numpy.ndarray
 
 ## Pandas 数据导入
 通过 `read_xxx()` 方法来从不同类型数据源中导入数据。
