@@ -347,7 +347,27 @@ Django 的 model 一般做数据存储，增删改查等工作。一般不会直
 * 模型类的每个属性都相当于一个数据库的字段
 * Django 提供了一个自动生成访问数据库的API
 
-如何让模型类与数据库中的表进行关联？
+#### Django 数据库设置
+[官方文档](https://docs.djangoproject.com/en/2.2/ref/settings/#databases)  
+默认的数据库是SQLite, 设置为 Mysql：  
+```
+DATABASES = {
+    'sqlite': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'smzdm',
+            'USER': 'root',
+            'PASSWORD': '123456',
+            'HOST': '10.0.110.34',
+            'PORT': '3306',
+        }    
+}
+```
+
+**如何让模型类与数据库中的表进行关联？**
 首先导入models
 `from django.db import models`
 编写模型类，继承自models.Model。
@@ -366,10 +386,10 @@ CREATE TABLE myapp_person( "id" serial NOT NULL PRIMARY KEY,
     "last_name" varchar(30) NOT NULL
     );
 ```
-其中myapp 是应用的名称。
+表名的形式为“应用名_类名”, 其中 myapp 是应用的名称。
 
-将类转为SQL语句：
-python  manage.py  makemigrations 生成中间脚本
+将类转为SQL语句：  
+python  manage.py  makemigrations 生成中间脚本  
 python  manage.py  migrate  将中间脚本生成SQL
 
 #### 实例:
@@ -405,10 +425,15 @@ pymysql.install_as_MySQLdb()
 ```
 2.  File "D:\Program Files\Python\Python37\lib\site-packages\django\db\backends\mysql\operations.py", line 146, in last_executed_query
     query = query.decode(errors='replace')
-AttributeError: 'str' object has no attribute 'decode'
+AttributeError: 'str' object has no attribute 'decode'  
 注释掉相关代码。
 
-3. 提示 No changes detected
+3. File "D:\Python\Python37\lib\site-packages\django\db\backends\mysql\base.py", line 36, in <module>
+    raise ImproperlyConfigured('mysqlclient 1.3.13 or newer is required; you have %s.' % Database.__version__)
+django.core.exceptions.ImproperlyConfigured: mysqlclient 1.3.13 or newer is required; you have 0.9.3.  
+注释掉版本判断相关代码。
+
+4. 提示 No changes detected
 在执行 python manage.py makemigrations 时提示 No changes detected，
 在 INSTALLED_APPS 中注册自己写的APP，
 
@@ -427,7 +452,7 @@ AttributeError: 'str' object has no attribute 'decode'
 执行 python  manage.y shell 进入Django Shell  
 在这里可以使用Pyhton 的语句、库，
 创建一个model的启动记录 ？？？
-导入 model `form index.models import *`, 之后就可以使用 index/models.py 中的类（Type 和 Name）。然后创建 Name 对象，设置属性，保存：
+导入 model， `from index.models import *`, 之后就可以使用 index/models.py 中的类（Type 和 Name）。然后创建 Name 对象，设置属性，保存：
 ```
 n = Name()
 n.name = "aaa"
@@ -444,7 +469,7 @@ Name.objects.get(id=1).name
 Name.objects.filter(id=1).update(name='kkk')
 Name.objects.filter(id=2).delete()
 ```
-Django.db.models.Model 中有使用oobjects 方法， create 相当于 insert; get查找 select, filter--- update , 全部删除 all().delete()
+Django.db.models.Model 中有使用 objects 方法， create 相当于 insert; get查找 select, filter--- update , 全部删除 all().delete()
 
 其他查询方法：
 ```
@@ -459,6 +484,9 @@ n = Name.objects.filter(name='kkk')
 values_list 返回 QuerySet,可以通过下标方式取值。
 filter 支持更多的条件。  
 这些操作经常在views.py中使用。在操作函数中对数据进行操作，返回给客户端
+
+#### models.Model.objects 分析
+objects 是一个 Manager() 对象，
 
 ## 模板
 模板将前端展示的部分提取出来，并且可以和Django进行交互。
