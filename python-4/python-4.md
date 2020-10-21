@@ -171,6 +171,13 @@ def pd_read_test():
     data = pd.read_csv()
     data2 = pd.read_excel()
     data3 = pd.read_sql()
+
+import pymysql
+def read_from_mysql():
+    sql  =  'SELECT *  FROM phone'
+    conn = pymysql.connect('10.0.110.34','root','123456','smzdm', 3306, charset='utf8mb4')
+    df = pd.read_sql(sql, conn) 
+    print (df)
 ```
 
 ## Pandas 数据预处理
@@ -316,3 +323,7 @@ def output_test():
 
 
 ## jieba 分词与提取关键词
+
+
+## snowNLP情感倾向分析
+
