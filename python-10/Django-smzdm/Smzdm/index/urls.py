@@ -32,8 +32,9 @@ register_converter(IntConverter, 'myint')
 
 urlpatterns = [
     path('', views.index),
-    # path('<int:year>', views.myyear),
+    path('<int:year>', views.myyear, name='myyear'),
     path('<int:year>/<str:name>', views.abc),
     # re_path('(?P<year>[0-9]{3})', views.re_year)
-    path('<myint:mm>', views.mmm)
+    path('<myint:mm>', views.mmm),
+    path('comment', views.comment)
 ]

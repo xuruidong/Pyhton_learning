@@ -491,26 +491,40 @@ objects 是一个 Manager() 对象，
 ## 模板
 模板将前端展示的部分提取出来，并且可以和Django进行交互。
 Django 如何与模板进行交互？可以使用Django自带的模板语言。模板语言在模板中定义了一些变量以及其他的一些功能。
+[菜鸟教程](https://www.runoob.com/django/django-template.html)上面更详细
 
 ### 模板变量
-* 模板变量{{ variables }} : 普通模板变量，使用{{}}将变量名括起来，变量名通过view将参数传递到模板，模板通过这种方式获取变量。
-* 从URL中获取模板变量 {% url 'urlyear' 2020 %} ：将2020传递到名为urlyear 的url中
+
+* 普通模板变量{{ variables }} : 普通模板变量，使用{{}}将变量名括起来，变量名通过view将参数传递到模板，模板通过这种方式获取变量。
+  在 views.py 中实现的函数，使用render 返回模板内容。render 还可以接收一些参数（统一放到一个字典中, 可以使用local() 函数），模板文件中使用模板变量可以获取到变量的值。
+* 从URL中获取的模板变量： {% url 'urlyear' 2020 %} ：将2020传递到名为urlyear 的url中
+  
+    在 urlpatterns 中设置 view 匹配规则： `path('<int:year>', views.myyear, name='myyear'),`, 并且对此 url 设置了 name。  
+    在 view 中使用 render 返回模板文件内容。
+    ```
+    def myyear(request, year):
+        return render(request, 'vartest.html', locals())
+    ```
+    模板文件在 index/templates 下。
+    ```
+    <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Title</title>
+        </head>
+        <body>
+            <div><a href="/2020.html">2020 booklist</a></div>
+            <div><a href="{% url 'myyear' 2020 %}">{{year}} booklist</a></div>
+        </body>
+    </html>
+    ```
+    对于 `<div><a href="{% url 'myyear' 2020 %}">2020 booklist</a></div>`, Django 先找到名为 myyear 的url, (在index/urls.py中绑定)，然后将参数2020传递给这个url, 此时这个url 相当于是 http://127.0.0.1:8000/2020
+
 * 读取静态资源内容 {% static "class/header.css" %}
 * for 遍历标签 {% for type in type_list %}{% endfor %}
+  type_list 
 * if 判断标签 {% if name.type==type.type %}{% endif %}
 
-```
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<div><a href="/2020.html">2020 booklist</a></div>
-<div><a href="{% url 'urlyear' 2020 %}">2020 booklist</a></div>
-</body>
-```
-对于 `<div><a href="{% url 'urlyear' 2020 %}">2020 booklist</a></div>`, Django 先找到名为 urlyear 的url, (在index/urls.py中绑定)，然后将参数2020传递给这个url, 此时这个url 相当于是 http://127.0.0.1:8000/2020
 
 ## 使用模板展示数据库中的内容
 流程：  
@@ -541,6 +555,7 @@ books函数中，使用ORM 方式获取了Name表中的所有数据，使用rend
 {% endfor %}
 </body>
 ```
+其中，n 是从view(books) 中传递来的变量。
 
 ## urlconf与models配置
 
