@@ -1,3 +1,4 @@
+#! 
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import SmzdmResult
@@ -21,5 +22,20 @@ def mmm(request, **kwargs):
     return HttpResponse("mmm")
 
 def comment(request, **kwargs):
-    res = SmzdmResult.objects.all()
-    return render(request, 'comment_result.html', locals())
+    # res = SmzdmResult.objects.all()
+    # return render(request, 'comment_result.html', locals())
+    shorts = SmzdmResult.objects.all()
+    # comment counts
+    counter = SmzdmResult.objects.all().count()  
+    # positive 
+    queryset = SmzdmResult.objects.values('sentiment')
+    condtions = {'sentiment__gte': 0.5}
+    plus = queryset.filter(**condtions).count()
+
+    # negative
+    queryset = SmzdmResult.objects.values('sentiment')
+    condtions = {'sentiment__lt': 0.5}
+    minus = queryset.filter(**condtions).count()
+
+    # return render(request, 'douban.html', locals())
+    return render(request, 'result.html', locals())    
