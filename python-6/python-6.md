@@ -557,7 +557,8 @@ books函数中，使用ORM 方式获取了Name表中的所有数据，使用rend
 ```
 其中，n 是从view(books) 中传递来的变量。
 
-## urlconf与models配置include
+## douban评论展示功能示例
+### urlconf与models配置include
 
 根据不同的功能，拆分成不同的app, 使用 urlconf 来配置路径（一般使用include 加载app下的urls.py 中的urlconf）。注意路径后面加“/”。  
 
@@ -565,6 +566,18 @@ books函数中，使用ORM 方式获取了Name表中的所有数据，使用rend
 通过 inspectdb 转换得到的model 类中会有一个元类 Meta 。
 元数据，class Meta,  中的数据不属于数据库中的字段，设置 managed=False， 当执行makemigration等操作时，会忽略该表。db_table 可以用来指定表名, 默认值是 app名_表名。
 
+### views 视图的编写
+在urlconf 中配置 url 和view 的关系。在 virw 中会导入models, 用于数据库的查询。
+t1.objects.all()
+...
+
+### 结合bootsstrap模板进行开发
+。。。
+
+## 如何阅读Django 的源代码
+针对某一单一功能来追踪，比如 runserver, 
+
+官方文档－－Models（模型层）--- QuerySet---Manager
 ---
 ## Django Web 管理界面
 
