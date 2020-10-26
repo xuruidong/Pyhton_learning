@@ -137,9 +137,10 @@ def class_method_test():
 * 类方法是`<bound method obj.class_func of <class '__main__.obj'>>`， 查看类方法描述器
 * `__init__()`是初始化函数，`__new__()`是构造函数
 
+
 #### 类方法描述器
 [描述器使用指南](https://docs.python.org/zh-cn/3.8/howto/descriptor.html)
-当类实例化后，也可以使用对象调用类方法。 在对象的`__dict__`中，是看不到类方法的，此时，实例对象会自动去自己所属的类中的`__dict__`中查找。
+当类实例化后，也可以使用对象调用类方法。 当对象调用类方法时，会先查找对象的`__dict__`中是查找。在对象的`__dict__`中，是看不到类方法的，此时，实例对象会自动去自己所属的类中的`__dict__`中查找。类方法叫bound method 。
 
 #### 在什么情况下使用类方法
 ##### 模拟实现构造函数
@@ -159,6 +160,7 @@ class Kls2():
 * 增加`__new__()`构造函数
 * 增加预处理函数
 
+预处理函数示例： 
 ```
 def pre_name(obj,name):
     fname, lname = name.split('-')
@@ -236,7 +238,7 @@ Orange.print_total()
 
 
 ### 静态方法
-静态方法可以由类直接调用
+静态方法可以由类直接调用  
 不能使用类和对象的属性
 
 ## 描述器高级应用
@@ -279,8 +281,8 @@ None
 call getattribute, age
 None
 ```
-* 在获取属性使，执行了`__getattribute__`中的print。
-* 如果显示实现了`__getattribute__`，获取已定义属性和未定义属性，都会调用`__getattribute__`。
+* 在获取属性时，执行了`__getattribute__`中的print
+* 如果显式实现了`__getattribute__`，获取已定义属性和未定义属性，都会调用`__getattribute__`。
 * item参数是被获取的属性的名字
 * 获取不存在的属性时，没有像默认行为那样抛出异常。因为`__getattribute__`被重载。
 * `self.name = args[0]` 并没有设置成功，并且其他地方的获取属性行为，也没有得到正确的值。因为`__getattribute__`没有返回值。
