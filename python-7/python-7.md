@@ -583,20 +583,32 @@ if __name__ == '__main__':
 ```
 
 ## 类继承
-封装/继承/重载/多态
-支持单继承和多继承
+封装/继承/重载/多态  
+封装：  
+继承：Python 支持单继承和多继承。missing 问题  
+重载：Python 没有在语法层面实现，需要通过一些编程技巧来实现  
 多态：Pyhton更崇尚鸭子类型
 
+在Python 2.2之前，Python 的类叫作经典类。经典类中，Python 内置类和自定义的类的父类不相同，这种情况下，比如自己模拟的list或dict, 和Python 内置的list或dict 是不一致的， 无法做到完全替换（***这句话怎么理解？？？***）。Python 2.2之后的类，叫作新式类。新式类都继承自 object, 无论是否显式写出。
 
 ### object 和 type的关系
 type类。有很多类，查询类型时都是<class 'type'>。
 * object 和 type都属于tpye类
-* type 类由type元类自身创建的。object类是由元类type创建的。
+  ```
+  type(object)  # <class 'type'>
+  type(type)    # <class 'type'>
+  ```
+  object 和 type都是由 type 类创建的。
+* type 类由type元类自身创建的。object类是由元类type创建的
+  Pyhton 中，类也是对象，所以 object 也是对象，这个对象由 type 来生成。type 是创建类的类，也被称作元类。
+  创建类的类，不一定是被创建类的父类。
 * object 的父类为空，没有任何继承类
-* type 的父类是object类  ？？？
+* type 的父类是object类 
+  
+在Python 中，类和类的关系，可以分为 继承关系和创建关系。
 
-https://www.cnblogs.com/busui/p/7283137.html
-[英文版](https://www.eecg.utoronto.ca/~jzhu/csc326/readings/metaclass-class-instance.pdf)
+https://www.cnblogs.com/busui/p/7283137.html  
+[英文版](https://www.eecg.utoronto.ca/~jzhu/csc326/readings/metaclass-class-instance.pdf)  
 https://www.cnblogs.com/yhleng/p/7779112.html
 
 类也是对象，所以object也是对象，这个对象由type创建。 type也被称作元类。
@@ -605,8 +617,11 @@ https://www.cnblogs.com/yhleng/p/7779112.html
 print("object:", object.__class__, object.__base__)
 print("type:", type.__class__, type.__base__)
 ```
+输出：
+```
 object: <class 'type'> None
 type: <class 'type'> <class 'object'>
+```
 `__class__` 创建者 ？？？
 `__base__` 基类
 
@@ -641,10 +656,10 @@ p1 = Man('Adam')
 p2 = Woman('Eve')
 ```
 问题：
-1. gene有没有被继承？ 否， `__init__`被重载
-2. People父类是什么？ object
-3. 能否实现多重层级继承？ 可以
-4. 能否实现多个父类同时继承？可以
+1. gene有没有被继承？ 
+2. People父类是什么？ 
+3. 能否实现多重层级继承？ 
+4. 能否实现多个父类同时继承？
    ```
     class Son(Man, Woman):
     def __init__(self,name):
@@ -655,10 +670,63 @@ p2 = Woman('Eve')
     p3.walk()
     p3.work()
    ```
-5. 示例中的子类，是否有gene 属性？**否**
+5. 示例中的子类，是否有gene 属性？
+
+```
+print (p1.gene)
+class Son(Man, Woman):
+    pass
+
+print(People.__class__, People.__base__)
+print (Man.__class__, Man.__base__)
+```
+结果：
+```
+builtins.AttributeError: 'Man' object has no attribute 'gene'
+<class 'type'> <class 'object'>
+<class 'type'> <class '__main__.People'>
+```
+
+答案：  
+1. 否， `__init__`被覆盖。 如果要继承 gene, 加入super().__init__()
+2. object。 即使写成class People: , 也是新式类
+3. 可以
+4. 可以
+5. 否
+
 
 ### 多重继承的顺序问题，菱形继承
 
+在上面的例子中，如果Man 和Woman 类中有相同的方法， 那么Son 中会方法继承自哪个类中呢？
+
+```
+class BaseClass(object):
+    def callme(self):
+        print ("BaseClass callme")
+
+class LeftSubclass(BaseClass):
+    # def callme(self):
+    #    print ("LeftSubclass callme")
+    pass
+
+
+class RightSubclass(BaseClass):
+    def callme(self):
+        print ("RightSubclass callme")
+
+class Subclass(LeftSubclass, RightSubclass):
+    pass
+
+s = Subclass()
+s.callme()
+```
+
+输出：
+```
+RightSubclass callme
+```
+
+菱形的继承关系，Subclass 中会继承 LeftSubclass 的方法。当调用的方法不存在，会在 RightSubclass 中查找，如果 RightSubclass 中也不存在 callme 方法，就会在 BaseClass 中查找。这是新式类的查找方式。
 如果多个父类存在相同的方法，
 经典类，深度优先查找，新式类，广度优先查找。
 mro方法，获得继承查找关系。

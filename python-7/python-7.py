@@ -185,13 +185,42 @@ def test():
     p1 = Man('Adam')
     p2 = Woman('Eve')
     p3 = Son("sss")
+    # print (p1.gene)
+    print ("---", People.__class__, People.__base__)
+    print ("---", Man.__class__, Man.__base__)
+    print ("===")
     #print (p3.__dict__)
     p3.shopping()
     p3.walk()
     p3.work()
-    print (p1.gene)
 
 
+# ---------------------------------------------
+class BaseClass(object):
+    def callme(self):
+        print ("BaseClass callme")
+
+class LeftSubclass(BaseClass):
+    # def callme(self):
+    #    print ("LeftSubclass callme")
+    pass
+
+
+class RightSubclass(BaseClass):
+    def callme(self):
+        print ("RightSubclass callme")
+
+class Subclass(LeftSubclass, RightSubclass):
+    pass
+
+
+def mor_test():
+    s = Subclass()
+    s.callme()
+    pass
+
+
+# =============================================
 def singleton(cls):
     instances = {}
     def getinstance():
@@ -275,8 +304,8 @@ if __name__ == "__main__":
     # test()
     # singleton_test()
     # single_test()
-    meta_test()
+    # meta_test()
+    mor_test()
     
-    print("object:", object.__class__, object.__base__)
-    print("type:", type.__class__, type.__base__)
+    
     print("===== end =====")
