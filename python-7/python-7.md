@@ -729,21 +729,58 @@ RightSubclass callme
 菱形的继承关系，Subclass 中会继承 LeftSubclass 的方法。当调用的方法不存在，会在 RightSubclass 中查找，如果 RightSubclass 中也不存在 callme 方法，就会在 BaseClass 中查找。这是新式类的查找方式。
 如果多个父类存在相同的方法，
 经典类，深度优先查找，新式类，广度优先查找。
-mro方法，获得继承查找关系。
-有向无环路图 
+mro方法，获得继承查找关系:
+```
+print (Subclass.mro())
+```
+```
+[<class '__main__.Subclass'>, <class '__main__.LeftSubclass'>, <class '__main__.RightSubclass'>, <class '__main__.BaseClass'>, <class 'object'>]
+```
+#### 有向无环路图 DAG(Directed Acyclic Graph)
+DAG 原本是一种数据结构，因为DAG的拓扑结构带来的优异特性，经常被用于处理动态规划、寻找最短路径的场景。
+![DAG](DAG.png)
+图中对应的继承关系为：
+```
+class O4(O5):
+    pass
+
+class O3(O5):
+    pass
+
+class O1(O4, O2):
+    pass
+
+```
+在图中会有**入度**为0的节点(1)，即没有被依赖的节点。1依赖2和4，去掉1后，2的入度为0，所以会先在2中查找。去掉2后，4的入度为0，依次类推，查找顺序为1-2-4-3-5
+
+
+C3算法比较复杂，
 
 
 
 * 继承机制（MRO）
 * MRO和C3算法
 
-。。。
+### Python 的重载
+语法层面未实现
+```
+class A(object):
+    def ff(self, a, b):
+        print ("ff_a_b")
+        
+    def ff(self):
+        print("ff")  
+```
+后面的方法会覆盖前面的方法。所以示例中只能调用 a.ff()
 
 ## 设计模式
 ### SOLID设计原则
 * 单一责任原则 The Single Respinsibility Principle
+  减少类承担的职责，降低复杂度。比如Scrapy, 爬取，下载，保存数据，在不同的类中
 * 开放封闭原则 The Open Closeed Principle
+  对扩展开放，对修改封闭
 * 里氏替换原则 The Liskov Substitution Principle
+  要求子类实现的方法要完整覆盖父类的方法。
 * 依赖倒置原则 The Depedency Inversion Principle
 * 接口分配原则 The Interface Segregation Principle
 
@@ -826,6 +863,11 @@ run func, b
 
 #### 线程安全版
 threading + double check
+```
+class Single(object):
+    __instance = None
+    __objs_lock = threading.lock() 
+```
 
 #### import 版
 ```
@@ -893,6 +935,7 @@ if __name__ == '__main__':
     factory = Factory()
     person = factory.getPerson("Adam", "M")
 ```
+根据传入不同的参数，生成不同的类实例。
 
 #### 类工厂模式
 一般在框架类代码中会见到，如Django， Scrapy。  
@@ -915,7 +958,16 @@ foo.say_foo()
 
 ## 元类
 [直通车](https://www.liaoxuefeng.com/wiki/1016959663602400/1017592449371072)
-Python 是动态语言，可以在运行时创建类。
+Python 是动态语言，可以在运行时创建类。使用类工厂函数可以创建类，但不够灵活。可以使用元类来创建类。
+* 元类是创建类的类，是类的模板
+* 元类是用来控制如何创建类的，正如类是创建对象的模板一样
+* 元类的实例为类，正如类的实例为对象
+* 创建元类的来个年终方法
+  * class
+  * type
+      type(类名，父类的元组，包含属性的字典)
+
+
 type() 函数可以查看一个类型或变量的类型，也可以创建出新的类型。
 `Hello = type('Hello', (object,), dict(hello=fn))`
 

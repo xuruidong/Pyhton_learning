@@ -217,10 +217,21 @@ class Subclass(LeftSubclass, RightSubclass):
 def mor_test():
     s = Subclass()
     s.callme()
+    print (Subclass.mro())
     pass
 
 
 # =============================================
+
+class A(object):
+    
+
+    def ff(self, a, b):
+        print ("ff_a_b")
+        
+    def ff(self):
+        print("ff")    
+        
 def singleton(cls):
     instances = {}
     def getinstance():
@@ -305,7 +316,8 @@ if __name__ == "__main__":
     # singleton_test()
     # single_test()
     # meta_test()
-    mor_test()
+    # mor_test()
     
-    
+    a = A()
+    a.ff(1, 2)
     print("===== end =====")
