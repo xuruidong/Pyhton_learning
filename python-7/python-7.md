@@ -961,15 +961,58 @@ foo.say_foo()
 Python 是动态语言，可以在运行时创建类。使用类工厂函数可以创建类，但不够灵活。可以使用元类来创建类。
 * 元类是创建类的类，是类的模板
 * 元类是用来控制如何创建类的，正如类是创建对象的模板一样
+  元类可以在类创建的时候，对创建过程进程拦截，
 * 元类的实例为类，正如类的实例为对象
 * 创建元类的来个年终方法
   * class
   * type
       type(类名，父类的元组，包含属性的字典)
 
-
+```
+def foo(self):
+    print("foooooo")
+    
+def type_test():
+    tmp = type('ss', (object,), {"foo": foo})
+    t = tmp()
+    print (tmp.__dict__)
+    print (t.__dict__)
+    t.foo()
+```
+输出：
+```
+{'foo': <function foo at 0x0000000002E86488>, '__module__': '__main__', '__dict__': <attribute '__dict__' of 'ss' objects>, '__weakref__': <attribute '__weakref__' of 'ss' objects>, '__doc__': None}
+{}
+foooooo
+```
 type() 函数可以查看一个类型或变量的类型，也可以创建出新的类型。
 `Hello = type('Hello', (object,), dict(hello=fn))`
 
-除了使用type()动态创建类以外，要控制类的创建行为，还可以使用metaclass。
+除了使用type()动态创建类以外，要控制类的创建行为，还可以使用metaclass。如果要创建相对更加复杂的类，比如在初始化时增加一些功能.
+```
+class DelVal(type):
+    def __new__(cls, name, bases, attrs, **kwargs):
+        attrs['abc'] = 200
+        return type.__new__(cls, name, bases, attrs)
+
+
+class DelDictVal(dict, metaclass=DelVal):
+    pass
+
+d = DelDictVal()
+print (d.abc)           #200
+print (d.__class__)     # <class '__main__.DelDictVal'>
+```
+
+ DelDictVal 类继承自 dict, 为了在创建类时增加功能，在Python2 中，使用`__mtaclass__`.
+ 也可以增加方法。  
+
+元类必须继承自type  
+元类必须实现`__new__`方法
+
+## mixin 模式
+抽象基类（abstract base class, ABC）用来确保派生类实现了基类中的特定方法。使用抽象基类的好处：
+* 避免继承错误，是类层次易于理解和维护
+* 无法实例化基类
+*  当子类没有完全实现父类的方法，会立即报错，
 

@@ -277,7 +277,26 @@ def single_test():
     c1.func()
     c2.func()
 
+def foo(self):
+    print("foooooo")
+    
+def type_test():
+    tmp = type('ss', (object,), {"foo": foo})
+    t = tmp()
+    print (tmp.__dict__)
+    print (t.__dict__)
+    t.foo()
+    
 
+class DelVal(type):
+    def __new__(cls, name, bases, attrs, **kwargs):
+        attrs['abc'] = 200
+        return type.__new__(cls, name, bases, attrs)
+
+
+class DelDictVal(dict, metaclass=DelVal):
+    pass
+    
 class ModelBase(type):
     """Metaclass for all models."""
     def __new__(cls, name, bases, attrs, **kwargs):
@@ -303,7 +322,10 @@ def meta_test():
     # m1 = ModelBase("M", )
 
     print("create Model===")
-    m2 = Model()
+    # m2 = Model()
+    d = DelDictVal()
+    print (d.abc)
+    print (d.__class__)
     
     
 if __name__ == "__main__":
@@ -315,9 +337,9 @@ if __name__ == "__main__":
     # test()
     # singleton_test()
     # single_test()
-    # meta_test()
+    meta_test()
     # mor_test()
+    # type_test()
     
-    a = A()
-    a.ff(1, 2)
+    
     print("===== end =====")
