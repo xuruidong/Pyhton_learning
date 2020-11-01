@@ -119,7 +119,29 @@ def map_test():
         print (it)
     
 from functools import wraps
+from functools import reduce
 # import wrapt
+def add(a, b):
+    return a + b
+
+def reduce_test():
+    a = [1, 2, 3, 4, 5]
+    b = reduce(add, a)
+    print (b)
+    
+def is_odd(x):
+    return x % 2 == 0
+
+def filter_test():
+    a = [1, 2, 3, 4, 5]
+    b = filter(is_odd, a)
+    print (type(b))
+    print (list(b))
+
+import functools
+def partial_test():
+    add_1 = functools.partial(add, 1)
+    print (add_1(10))
 
 def decorate(func):
     print("in decorate, arg:%s" % (func.__name__))
@@ -296,7 +318,10 @@ if __name__ == "__main__":
     # counter_test()
 
     # print (dir(__builtins__))
-    map_test()
+    # map_test()
+    # reduce_test()
+    # filter_test()
+    partial_test()
     # fun2(33, 44)
     # import timeit
     # print(timeit.timeit('fibonacci(3)', setup="from __main__ import fibonacci"))
@@ -304,6 +329,6 @@ if __name__ == "__main__":
     # action()
     # generator_test2()
     # iter_valid()
-    global_test()
+    # global_test()
     # nolocal_test()
     print ("=== end ===")

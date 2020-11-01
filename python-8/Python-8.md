@@ -112,6 +112,7 @@ id(x[1])= 8791162905424
 在Python中，对于不可变数据类型，值（对象）是真实存在于内存中，对变量赋值，只是让变量指向值（对象）。
 不可变数据对象，无论有多少个引用，只占一块内存。 比如，某个计算流程不断产生新数字，就会不断产生对象，占用内存空间。
 
+a=1, 内存中会有对象1， a是对象1的引用，a=2, 会在内存中创建对象2， 并将a引用对象2. b=1, 此时 a和b指向的是同一个对象。
 
 ## 序列
 ### 序列的分类
@@ -469,6 +470,16 @@ functools.partial: 返回一个可调用的partial对象
 
 比如某函数func 需要多个参数，但一部分参数经常是固定的，此时就可以使用partial对其进行包裹。比如Django 的urlconf 中的path, 
 
+```
+import functools
+
+def add(a, b):
+    return a + b
+    
+def partial_test():
+    add_1 = functools.partial(add, 1)
+    print (add_1(10))
+```
 
 #### 高阶函数
 函数的参数和返回值是函数。???
@@ -510,8 +521,30 @@ def map_test():
 ```
 
 ##### reduce
+```
+from functools import reduce
+def add(a, b):
+    return a + b
+
+def reduce_test():
+    a = [1, 2, 3, 4, 5]
+    b = reduce(add, a)
+    print (b) # 15
+```
+依次进行两两相加
 
 ##### filter
+
+```
+def is_odd(x):
+    return x % 2 == 0
+
+def filter_test():
+    a = [1, 2, 3, 4, 5]
+    b = filter(is_odd, a)
+    print (type(b)) #<class 'filter'>
+    print (list(b)) #[2, 4]
+```
 
 ***看 functools 和 itertools文档***
 
