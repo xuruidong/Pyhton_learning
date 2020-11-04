@@ -555,6 +555,7 @@ def filter_test():
 
 #### 闭包
 
+内部函数对外部函数作用域里变量的引用（非全局变量），称你不函数为闭包。  
 闭包，又称闭包函数或者闭合函数，其实和前面讲的嵌套函数类似，不同之处在于，闭包中外部函数返回的不是一个具体的值，而是一个函数。一般情况下，返回的函数会赋值给一个变量，这个变量可以在后面被继续执行调用。
 例如，计算某直线上点的值：
 ```
@@ -582,6 +583,75 @@ y3 = f(104)
 比较简洁，优雅很多。
 闭包可以避免使用全局值并提供某种形式的数据隐藏。它还可以提供面向对象的解决问题的解决方案。
 当在类中几乎没有方法(大多数情况下是一种方法)时，闭包可以提供一个替代的和更优雅的解决方案。 但是当属性和方法的数量变大时，更好地实现一个类。
+
+比如要实现对函数调用次数计数的功能：
+```
+def counter(start):
+    count = [start]
+    def incr():
+        count[0] += 1
+        return count[0]
+    return incr
+
+c1 = counter(10)
+print (c1())        # 11
+print (c1())        # 12
+```
+
+也可以写出这样：
+```
+def counter(start):
+    count = start
+    def incr():
+        nonlocal count
+        count += 1
+        return count
+    return incr
+```
+
+#### 函数中的变量
+打印函数使用的局部变量：
+```
+def var_f():
+    var_b = 10
+    
+    def inner(x):
+        return var_b + x
+    return inner
+
+def var_test():
+    f = var_f()
+    print(f.__code__.co_varnames)
+    print (var_test.__code__.co_varnames)
+```
+输出：
+```
+('x',)
+('f',)
+```
+函数的自由变量：
+```
+def var_test():
+    f = var_f()
+    print(f.__code__.co_freevars)
+    print(f.__closure__[0].cell_contents)
+    print (var_test.__code__.co_freevars)
+```
+输出：
+```
+('var_b',)
+10
+()
+```
+自由变量就是使用的外部变量. __closure__[0].cell_contents 是自由变量的值  
+
+### 函数和类的区别
+```
+print (set(dir(var_test)) - set(dir(object)))
+
+{'__qualname__', '__dict__', '__module__', '__code__', '__kwdefaults__', '__name__', '__globals__', '__get__', '__defaults__', '__closure__', '__annotations__', '__call__'}
+```
+
 
 ## 装饰器
 游戏人物，带装备，数量不确定。如果每种人物+某一种装备，都用一个对象来表示，那么需要N*M个类。

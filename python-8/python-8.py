@@ -291,6 +291,22 @@ def iter_valid():
     al.append(5)
     print (next(it_a))
 
+def var_f():
+    var_b = 10
+    
+    def inner(x):
+        return var_b + x
+    return inner
+
+
+def var_test():
+    f = var_f()
+    print(f.__code__.co_varnames)
+    print(f.__code__.co_freevars)
+    print(f.__closure__[0].cell_contents)
+    print (var_test.__code__.co_varnames)
+    print (var_test.__code__.co_freevars)
+
 g = "abc"
 def global_test():
     print (g)
@@ -311,6 +327,15 @@ def nolocal_test():
     o = outer()
     print (o())
     
+def counter(start):
+    count = start
+    def incr():
+        nonlocal count
+        count += 1
+        return count
+    return incr
+
+    
 if __name__ == "__main__":
     # assign_test()
     # deep_copy_test()
@@ -321,7 +346,8 @@ if __name__ == "__main__":
     # map_test()
     # reduce_test()
     # filter_test()
-    partial_test()
+    # partial_test()
+    # var_test()
     # fun2(33, 44)
     # import timeit
     # print(timeit.timeit('fibonacci(3)', setup="from __main__ import fibonacci"))
@@ -331,4 +357,9 @@ if __name__ == "__main__":
     # iter_valid()
     # global_test()
     # nolocal_test()
+    # print (set(dir(var_test)) - set(dir(object)))
+    c1 = counter(10)
+    print (c1())
+    print (c1())
+
     print ("=== end ===")
