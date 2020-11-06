@@ -352,6 +352,9 @@ if __name__ == "__main__":
     # import timeit
     # print(timeit.timeit('fibonacci(3)', setup="from __main__ import fibonacci"))
     # print (fibonacci(30))
+    count_func1()
+    count_func2()
+    count_func1()
     # action()
     # generator_test2()
     # iter_valid()
@@ -359,7 +362,7 @@ if __name__ == "__main__":
     # nolocal_test()
     # print (set(dir(var_test)) - set(dir(object)))
     c1 = counter(10)
-    print (c1())
-    print (c1())
+    # print (c1())
+    # print (c1())
 
     print ("=== end ===")

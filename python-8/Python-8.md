@@ -774,7 +774,7 @@ def fun2(a, b):
     print ("fun2: %s" % (fun2.__name__))
     print(f"in func2, {a}, {b}")
 
-func2()
+func2(33, 44)
 ```
 输出结果：
 ```
@@ -783,7 +783,7 @@ inner: fun2
 fun2: inner
 in func2, 33, 44
 ```
-func2被替换成了decorate()中的inner.
+func2被替换成了decorate()中的inner, 所以func2中打印`__name__` 是 inner。 inner 函数中，func 是decorate 的参数，传递的是 func2.
 inner参数要和被装饰函数保持一致。
 
 #### 被装饰函数带不定长参数
@@ -809,6 +809,8 @@ def fun2(a, b):
     print ("fun2: %s" % (fun2.__name__))
     print(f"in func2, {a}, {b}")
 ```
+
+这个例子就是一个装饰器的模板，可以对任何函数进行装饰，预处理+结果处理。 
 
 #### 装饰器带参数
 装饰器也是函数，也可以带参数。就像Flask 的route.
@@ -873,7 +875,59 @@ def fun2(a, b):
 ```
 不加`@wraps(func)`, fun2.__name__ 是inner, 加`@wraps(func)`, fun2.__name__是 fun2。  
 ***这样有什么用？***  
-比如多个函数被`decorate` 装饰， 被装饰函数中需要使用自己的某些属性，如函数名，如果不加warps，那么获得的都是inner.
+比如多个函数被`decorate` 装饰， 被装饰函数中需要使用自己的某些属性，如函数名，如果不加warps，那么获得的都是inner.  
+
+flask 使用 wraps 的案例
+```
+########################
+# flask 使用@wraps()的案例
+from functools import wraps
+ 
+def requires_auth(func):
+    @wraps(func)
+    def auth_method(*args, **kwargs):
+        if not auth:
+            authenticate()
+        return func(*args, **kwargs)
+    return auth_method
+
+@requires_auth
+def func_demo():
+    pass
+```
+只有经过验证的view 才能被访问，
+
+```
+from functools import wraps
+ 
+def logit(logfile='out.log'):
+    def logging_decorator(func):
+        @wraps(func)
+        def wrapped_function(*args, **kwargs):
+            log_string = func.__name__ + " was called"
+            print(log_string)
+            with open(logfile, 'a') as opened_file:
+                opened_file.write(log_string + '\n')
+            return func(*args, **kwargs)
+        return wrapped_function
+    return logging_decorator
+ 
+@logit()
+def myfunc1():
+    pass
+ 
+myfunc1()
+# Output: myfunc1 was called
+ 
+@logit(logfile='func2.log')
+def myfunc2():
+    pass
+ 
+myfunc2()
+
+# Output: myfunc2 was called
+```
+
 
 ##### 使用wrapt包代替@wraps
 [文档](https://wrapt.readthedocs.io/en/latest/quick-start.html)  
@@ -972,6 +1026,8 @@ six = MyClass(6)
 for i in range(5):
     six.display()
 ```
+未被装饰时， display() 直接打印 self.number。 被装饰后， display() 方法被重写，
+
 疑问：
 * 装饰器中的类，不继承被装饰的类？
 * 装饰器中的类要实现被装饰类所有的方法？
