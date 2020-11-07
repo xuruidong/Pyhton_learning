@@ -335,6 +335,33 @@ def counter(start):
         return count
     return incr
 
+
+
+def jumping_range(up_to):
+    index = 0
+    while index < up_to:
+        jump = yield index
+        print (f'jump is {jump}')
+        if jump is None:
+            jump = 1
+        index += jump
+        print (f'index is {index}')
+
+def yield_exp_test():
+    it = jumping_range(5)
+    print ("get first value")
+    print (next(it))
+    print ("=== after get first value ===")
+    print ("send 2")
+    print (it.send(2))
+    print ("=== after send 2 ===")
+    print ("next")
+    print (next(it))
+    print ("=== next ===")
+    print (it.send(-1))
+    for x in it:
+        print (x)
+        
     
 if __name__ == "__main__":
     # assign_test()
@@ -352,17 +379,16 @@ if __name__ == "__main__":
     # import timeit
     # print(timeit.timeit('fibonacci(3)', setup="from __main__ import fibonacci"))
     # print (fibonacci(30))
-    count_func1()
-    count_func2()
-    count_func1()
+    
     # action()
     # generator_test2()
     # iter_valid()
     # global_test()
     # nolocal_test()
     # print (set(dir(var_test)) - set(dir(object)))
-    c1 = counter(10)
+    # c1 = counter(10)
     # print (c1())
     # print (c1())
+    yield_exp_test()
 
     print ("=== end ===")

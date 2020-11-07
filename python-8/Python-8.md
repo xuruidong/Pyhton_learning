@@ -1067,8 +1067,10 @@ yield 和 return不同， return 返回后，函数状态终止，yield保持函
 函数被yield会暂停，局部变量也会被保存
 迭代器终止时，会抛出StopIteration异常。
 
-`[i for i in range(10)]` 是list  
+`[i for i in range(10)]` 是list。 列表推导式。    
 `(i for i in range(10))` 不是list, 也不是元组，而是生成器
+
+使用yield 返回，得到一个生成器。生成器是可迭代对象。
 
 ```
 def generator_test():
@@ -1091,11 +1093,11 @@ def generator_test():
 3 4 5 6 7 8 9
 ```
 
-next() 对应的魔术方法是`__next__()`, 迭代的魔术方法是`__iter__`. 迭代器实现了这两个方法。  
-如果只实现了`__iter__`, 那么这个对象就是一个可迭代对象。
+next() 对应的魔术方法是`__next__()`, 迭代的魔术方法是`__iter__`. 迭代器实现了这两个方法, 可以使用 for in 和 next() 操作。  
+如果只实现了`__iter__`, 那么这个对象就是一个可迭代对象，只能使用 for in 操作。  
 
-可迭代iterable, 迭代器Iterator， 生成器Generator 的关系：
-可迭代iterable： 实现了`__iter__`方法， 迭代器和生成器都是可迭代的。
+**可迭代iterable, 迭代器Iterator， 生成器Generator 的关系：**  
+可迭代iterable： 实现了`__iter__` 或 `__getitem__()`方法， 迭代器和生成器都是可迭代的。
 迭代器Iterator： 实现了`__next__()` 和 `__iter__()`
 生成器Generator: 由yield返回生成， 属于迭代器。
 
@@ -1106,6 +1108,8 @@ def generator_test2():
     print(hasattr(a, '__next__'))  # False
 ```
 list 属于可迭代对象，但不是迭代器。
+
+在类中实现 `__iter__` 和 `__next__()`，就实现了迭代器协议。在函数中使用 yield, 它就成了一个 生成器构造函数。
 
 ### 迭代器使用
 
@@ -1184,6 +1188,42 @@ al = [1, 2, 3]
 
 ### yield表达式
 
+```
+def jumping_range(up_to):
+    index = 0
+    while index < up_to:
+        jump = yield index
+        print (f'jump is {jump}')
+        if jump is None:
+            jump = 1
+        index += jump
+        print (f'index is {index}')
+
+def yield_exp_test():
+    it = jumping_range(5)
+    print ("get first value")
+    print (next(it))
+    print ("=== after get first value ===")
+    print ("send 2")
+    print (it.send(2))
+    print ("=== after send 2 ===")
+    print ("next")
+    print (next(it))
+    print ("=== next ===")
+    print (it.send(-1))
+    for x in it:
+        print (x)
+```
+第一次使用 next() 可以获得 yield 返回值(index)，程序还停留在 yield 处。 使用send ,可以传递值给yield （jump）, 并向下执行程序，此时 send 的返回值是 yield index, (2) , 所以 print (it.send(2)) 输出为 2。程序仍然暂停在 yield.  
+再执行 next() 时，程序继续执行，由于不是send, 所以jump 是None,  index 为 3， 返回3 . 这里也可以使用 send(None) 实验。
 
 ## 协程
-当yield作为表达式时，
+当yield作为表达式时，可以接收值。 对于IO操作，当等待结果时，返回去执行其他操作， 当IO事件到来，在IO等待的地方继续执行。  
+
+### 协程和线程的区别
+* 协程是异步的，线程是同步的？？？
+* 协程是非抢占式的，线程是抢占式的
+* 线程是被动调度的，协程是主动调度的
+* 协程可以暂停函数的执行，保留上一次调用的状态，是增强型生成器
+* 协程是用户级的任务调度，线程是内核级的任务调度
+* 协程适用于IO密集型程序，不适用于CPU密集型程序的处理
