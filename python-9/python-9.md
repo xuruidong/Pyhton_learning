@@ -1,5 +1,10 @@
 # Python-9 Django 源码分析
 
+用户请求路径的处理，如何对应view.  
+view 与模板，模型的关联， view 如何对用户请求处理，以及如何返回给用户内容。  
+模板
+model 查询管理器的实现。
+
 ## URLconf 的偏函数
 
 URLconf 用来指示如何处理用户请求的路径，如何与view进行匹配。view 关联了Modle， 模板Template。  
@@ -31,8 +36,8 @@ re_path = partial(_path, Pattern=RegexPattern)
 查看[partial 文档](https://docs.python.org/zh-cn/3/library/functools.html#functools.partial)，可知，partial 用来固定函数的一些参数得到另一个函数，得到偏函数，方便使用。
 path 就是将 _path 的Pattern 固定为RoutePattern 的片函数。
 
-用装饰器（闭包）来实现partial
-示例
+#### 用装饰器（闭包）来实现partial
+示例：
 
 ### include 的实现
 在urlpatterns 中通过include 可以引入另外一个文件（app 的 urls.py），来引入app中路径和view的对应关系。
@@ -47,15 +52,54 @@ def tuple_test():
 拆分时不产生歧义。
 
 #### include() 流程
-在include函数中， 对参数 arg 进行类型判断。
-如果是元组，对其拆分，格式为 (urlconf_module, app_name),
-如果是str， 使用 inport_module()函数导入。
-在导入的模块中获取 patterns 和 app_name。
-对 urlpatterns 校验，
-返回 (urlconf_module, app_name, namespace)
+1. 在include函数中， 对参数 arg 进行类型判断。
+2. 如果是元组，对其拆分，格式为 (urlconf_module, app_name),
+3. 如果是str， 使用 inport_module()函数导入：
+```
+if isinstance(urlconf_module, str):
+    urlconf_module = import_module(urlconf_module)
+```
+4. 在导入的模块中获取 patterns 和 app_name。
+```
+patterns = getattr(urlconf_module, 'urlpatterns', urlconf_module)
+app_name = getattr(urlconf_module, 'app_name', app_name)
+```
+对 urlpatterns 校验:
+```
+# Make sure the patterns can be iterated through (without this, some
+# testcases will break).
+if isinstance(patterns, (list, tuple)):
+    for url_pattern in patterns:
+        pattern = getattr(url_pattern, 'pattern', None)
+        if isinstance(pattern, LocalePrefixPattern):
+            raise ImproperlyConfigured(
+                'Using i18n_patterns in an included URLconf is not allowed.'
+            )
+```
+5. 返回 (urlconf_module, app_name, namespace), 返回元组给path, path 会对类型进行判断：
+```
+def _path(route, view, kwargs=None, name=None, Pattern=None):
+    if isinstance(view, (list, tuple)):
+        # For include(...) processing.
+        pattern = Pattern(route, is_endpoint=False)
+        urlconf_module, app_name, namespace = view
+        return URLResolver(
+            pattern,
+            urlconf_module,
+            kwargs,
+            app_name=app_name,
+            namespace=namespace,
+        )
+    elif callable(view):
+        pattern = Pattern(route, name=name, is_endpoint=True)
+        return URLPattern(pattern, view, kwargs, name)
+    else:
+        raise TypeError('view must be a callable or a list/tuple in the case of include().')
+```
 
-#### inport_module()
-
+#### import_module()
+`def import_module(name, package=None):`  
+利用此函数可以在程序运行时动态导入模块。
 
 ## view视图的请求过程
 view 可以加载Model中的数据，也可以通过render()方法来渲染Template 模板。还有核心功能：处理用户发送的请求，并且将请求结果返回给用户。  
@@ -82,12 +126,21 @@ def myint(request, year):
 所有的view 函数都带有参数 request, 也就是用户的请求信息。
 ### 请求如何到达view
 
-view 函数参数的request, 是 <class 'django.core.handlers.wsgi.WSGIRequest'>， WSGIRequest 继承于django.http.HttpRequest 每收到一个请求，就会产生一个 WSGIRequest 对象。  
+view 函数参数的request, 是 <class 'django.core.handlers.wsgi.WSGIRequest'>， WSGIRequest 继承于django.http.HttpRequest 每收到一个请求，就会产生一个 WSGIRequest 对象。
+```
+def index(request):
+	print (type(request)) 
+	print (request.__class__.__name__)
+```
+```
+<class 'django.core.handlers.wsgi.WSGIRequest'>
+WSGIRequest
+```
 那么 request 是在什么地方产生的呢？ 在启动服务时， 运行了 manager.py， 调用了WSGI， request就是由 WSGI 创建的。
 处理完请求后，返回内容，可以返回一个 HttpResponse 对象。
 
-WSGIRequest 在`__init__`中并没有调用super, 所以像 META 的属性被重新赋值定义，其他的如GET等被定义为被 cached_property 装饰的方法。 
-META 是元信息，保存了系统环境变量，HTTP 头信息，URL请求参数等等。
+WSGIRequest 在`__init__`中并没有调用super, 所以像 META 的属性被重新赋值定义，其他的如GET等被定义为被 cached_property 装饰的方法。   
+META 是元信息，保存了系统环境变量，HTTP 头信息，URL请求参数等等。  
 在 HttpRequest 和 WSGIRequest 中，GET 是 QueryDict， QueryDict 继承自 MultiValueDict ，dict，用来保存url 参数，键对应的是list， 如访问 http://127.0.0.1:8000/?a=1&b=wwwwwwwwwwwwww&a=22，GET 值是 <QueryDict: {'a': ['1', '22'], 'b': ['wwwwwwwwwwwwww']}> ，打印结果为什么是这样的呢？ 因为在 MultiValueDict 中
 ```
 def __repr__(self):
@@ -101,6 +154,7 @@ WSGIRequest 的 GET、COOKIES 等方法被 cached_property 装饰。
 ```
 
 ### 对响应的处理
+在view 中对请求进行响应，一般可以返回 HttpResponse，
 [HttpResponse 用法](https://docs.djangoproject.com/zh-hans/2.2/ref/request-response/#django.http.HttpResponse)
 
 在返回 HttpResponse 对象时，可以通过关键字参数指定header 信息，
@@ -121,6 +175,7 @@ res['abc'] = "ddddddd"
 ```
 return HttpResponseNotFound("aaavvvvvvddd")
 ```
+还有很多子类。
 
 ### 总结
 ![DjangoFlowchart](DjangoFlowchart.png)
@@ -140,6 +195,8 @@ c. HTTPResponse is sent to the ***Response Middlerwares***
 d. Any of the response middlewares can enrich the response or return a completely new response
 e. The response is sent to the user’s browser.
 
+请求中间件， 在请求进行url 匹配前进行处理，如防止跨站攻击。  
+view 中间件，在请求进入view 前对请求进行处理
 ## Model
 当自定义Model 类时，要继承 models.Model ，此时 Django 会自动创建 id 主键， 自动拥有查询管理器对象，可以使用查询管理器提供的内置查询等命令。可以使用 ORM API 对数据库实现 CRUD  
 以下是一个示例：
