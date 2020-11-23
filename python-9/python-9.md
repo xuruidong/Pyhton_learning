@@ -214,8 +214,9 @@ class Name(models.Model):
 class Model(metaclass=ModelBase):
     ...
 ```
-Model 指定了元类，所以在创建Model 时会使用元类的`__new__`。
-ModelBase : `class ModelBase(type):` 符合元类的特点：继承自 type, 实现了`__new__`,并且返回了类。
+Model 指定了元类，所以在创建Model 时不使用默认的`__new__`方法，而是会使用元类的`__new__`。  
+ModelBase : `class ModelBase(type):` 符合元类的特点：继承自 type, 实现了`__new__`,并且返回了类。  
+ModelBase 中实现了创建主键id 的功能。  
 在 `ModelBase.__new__` 中，先判断初始化的对象是不是本身：
 ```
 # Also ensure initialization is only performed for subclasses of Model
@@ -234,7 +235,7 @@ new_class._meta.apps.register_model(new_class._meta.app_label, new_class)
 ```
 在 _prepare(cls) 中， opts._prepare(cls) 相当于是 Options._prepare(cls)
 
-在 Options._prepare() 中，`if self.pk is None:` 如果主键是空，。。。
+在 Options._prepare() 中，`if self.pk is None:` 如果主键是空，添加ID主键
 
 ### Model 的查询管理器
 ```
@@ -249,11 +250,13 @@ def movies(request):
     print (res)
     return render(request, 'index.html', locals())
 ```
+自己实现的Model, 当继承了 models.Model ,就有了查询管理器, 进而可以使用objects.all() 等方法对数据库进行查询等操作。
+
 * 如何让查询管理器的名字不是 objects
 * 如何利用 Manager(objects) 实现对Model 的 CRUD?
 * 为什么查询管理器返回 QuerySet 对象？
 
-当继承了 models.Model ,就有了查询管理器。
+在 models.Model --> ModelBase --> _prepare() 中创建了查询管理器 Manager 对象，
 在 ModelBase._prepare() 中：
 ```
 if not opts.managers:
@@ -271,15 +274,49 @@ Manager 的定义：
 class Manager(BaseManager.from_queryset(QuerySet)):
     pass
 ```
-from_queryset 是一个类方法，在这里返回了新类 BaseManagerFromQuerySet ，并且使用 _get_queryset_methods 设置了属性，所以 Manager 继承自 BaseManagerFromQuerySet ，父类都是 QuerySet 。所以 Manager 拥有 QuerySet 大部分方法。  
-
-_get_queryset_methods test:
+from_queryset 是一个类方法，在这里返回了新类 
 ```
-
+@classmethod
+def from_queryset(cls, queryset_class, class_name=None):
+    if class_name is None:
+        class_name = '%sFrom%s' % (cls.__name__, queryset_class.__name__)
+    return type(class_name, (cls,), {
+        '_queryset_class': queryset_class,
+        **cls._get_queryset_methods(queryset_class),
+    })
 ```
+这里动态地创建了一个类。
+返回的新类的名为 BaseManagerFromQuerySet ，并且使用 _get_queryset_methods 设置了属性（type 的功能），所以 Manager 继承自 BaseManagerFromQuerySet ，父类都是 QuerySet 。所以 Manager 拥有 QuerySet 大部分方法，如 get, create, filter等。  
 
+_get_queryset_methods :
+```
+@classmethod
+def _get_queryset_methods(cls, queryset_class):
+    def create_method(name, method):
+        def manager_method(self, *args, **kwargs):
+            return getattr(self.get_queryset(), name)(*args, **kwargs)
+        manager_method.__name__ = method.__name__
+        manager_method.__doc__ = method.__doc__
+        return manager_method
 
+    new_methods = {}
+    for name, method in inspect.getmembers(queryset_class, predicate=inspect.isfunction):
+        # Only copy missing methods.
+        if hasattr(cls, name):
+            continue
+        # Only copy public methods or methods with the attribute `queryset_only=False`.
+        queryset_only = getattr(method, 'queryset_only', None)
+        if queryset_only or (queryset_only is None and name.startswith('_')):
+            continue
+        # Copy the method onto the manager.
+        new_methods[name] = create_method(name, method)
+    return new_methods
+```
+将属于 queryset_class 的方法，但自身没有的方法（同名方法使用自身的）添加到 new_methods 并返回。对于内置方法（以下划线开头），跳过。
+
+所以 objects 就是一个 Manager 实例，要对objects 改名可以在 Model 中创建一个 Manager 实例.
 #### inspect --- 检查对象
+在遍历 queryset_class 的方法时， 使用了 inspect  
 [文档](https://docs.python.org/zh-cn/3/library/inspect.html)
 
 ## Template
