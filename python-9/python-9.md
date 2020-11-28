@@ -321,3 +321,131 @@ def _get_queryset_methods(cls, queryset_class):
 
 ## Template
 ### render 如何找到要加载的文件
+render() 用于对模板的渲染。这里关注两个功能：
+1. 如何找到 templates 目录，templates 名字是固定的，放在每个 app 中的。
+2. 在 settings.py 中有一系列模板相关的配置，这些配置起到什么功能？
+3. 对 html 中的一些过滤器、变量的替换是如何实现的？
+
+一个栗子：
+```
+def movies(request):
+    queryset = DoubanShort.objects.all()
+    # queryset = T1.objects.values('sentiment')
+    condtions = {'stars__gte': 4}
+    res = queryset.filter(**condtions)
+    print (res)
+    return render(request, 'index.html', locals())
+```
+跳转到 render 定义：
+```
+def render(request, template_name, context=None, content_type=None, status=None, using=None):
+    """
+    Return a HttpResponse whose content is filled with the result of calling
+    django.template.loader.render_to_string() with the passed arguments.
+    """
+    content = loader.render_to_string(template_name, context, request, using=using)
+    return HttpResponse(content, content_type, status)
+```
+这里执行了 loader.render_to_string， 并返回了 HttpResponse 对象。
+```
+def render_to_string(template_name, context=None, request=None, using=None):
+    """
+    Load a template and render it with a context. Return a string.
+
+    template_name may be a string or a list of strings.
+    """
+    if isinstance(template_name, (list, tuple)):
+        template = select_template(template_name, using=using)
+    else:
+        template = get_template(template_name, using=using)
+    return template.render(context, request)
+```
+在 render_to_string 中，实例中传入的是 'index.html', 先看 get_template, 
+```
+def get_template(template_name, using=None):
+    """
+    Load and return a template for the given name.
+
+    Raise TemplateDoesNotExist if no such template exists.
+    """
+    chain = []
+    engines = _engine_list(using)
+    print ("=======", engines)
+    for engine in engines:
+        try:
+            return engine.get_template(template_name)
+        except TemplateDoesNotExist as e:
+            chain.append(e)
+
+    raise TemplateDoesNotExist(template_name, chain=chain)
+```
+
+_engine_list :
+[<django.template.backends.django.DjangoTemplates object at 0x0000000004144128>]
+```
+def _engine_list(using=None):
+    return engines.all() if using is None else [engines[using]]
+```
+
+engines 是 EngineHandler 对象。 在 EngineHandler 类中，实现了 `__getitem__`,可以以字典方式操作。  `__iter__` 所以可迭代。  
+all() 方法的实现：
+```
+def all(self):
+    return [self[alias] for alias in self]
+```
+真正被迭代的对象是 self.templates， templates 是被 cached_property 装饰后的方法：
+```
+@cached_property
+def templates(self):
+    if self._templates is None:
+        self._templates = settings.TEMPLATES
+
+    templates = OrderedDict()
+    backend_names = []
+    for tpl in self._templates:
+        try:
+            # This will raise an exception if 'BACKEND' doesn't exist or
+            # isn't a string containing at least one dot.
+            default_name = tpl['BACKEND'].rsplit('.', 2)[-2]
+        except Exception:
+            invalid_backend = tpl.get('BACKEND', '<not defined>')
+            raise ImproperlyConfigured(
+                "Invalid BACKEND for a template engine: {}. Check "
+                "your TEMPLATES setting.".format(invalid_backend))
+
+        tpl = {
+            'NAME': default_name,
+            'DIRS': [],
+            'APP_DIRS': False,
+            'OPTIONS': {},
+            **tpl,
+        }
+
+        templates[tpl['NAME']] = tpl
+        backend_names.append(tpl['NAME'])
+
+    counts = Counter(backend_names)
+    duplicates = [alias for alias, count in counts.most_common() if count > 1]
+    if duplicates:
+        raise ImproperlyConfigured(
+            "Template engine aliases aren't unique, duplicates: {}. "
+            "Set a unique NAME for each engine in settings.TEMPLATES."
+            .format(", ".join(duplicates)))
+
+    return templates
+```
+默认 self._templates 是 None， 所以先被赋值为  settings.TEMPLATES. 
+all() 返回的是 self._engines[alias] 组成的list, 元素都是engine_cls， 
+
+
+```
+tmp = {'a': 1, 'b': 12}
+tmp_b = {'c': 222, 'b': 333, **tmp}
+print (tmp_b)
+```
+```
+{'c': 222, 'b': 12, 'a': 1}
+```
+。。。
+
+### 对模板的渲染
