@@ -352,6 +352,8 @@ def yield_exp_test():
     print ("get first value")
     print (next(it))
     print ("=== after get first value ===")
+    # print (next(it))
+    # print ("=== after get second value ===")
     print ("send 2")
     print (it.send(2))
     print ("=== after send 2 ===")
@@ -362,6 +364,16 @@ def yield_exp_test():
     for x in it:
         print (x)
         
+
+import asyncio
+
+async def main():
+    print('hello')
+    await asyncio.sleep(3)
+    print('world')
+
+def coroutine_test():
+    asyncio.run(main())
     
 if __name__ == "__main__":
     # assign_test()
@@ -389,6 +401,7 @@ if __name__ == "__main__":
     # c1 = counter(10)
     # print (c1())
     # print (c1())
-    yield_exp_test()
+    # yield_exp_test()
+    coroutine_test()
 
     print ("=== end ===")

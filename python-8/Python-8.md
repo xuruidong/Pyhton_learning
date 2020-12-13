@@ -555,7 +555,7 @@ def filter_test():
 
 #### 闭包
 
-内部函数对外部函数作用域里变量的引用（非全局变量），称你不函数为闭包。  
+内部函数对外部函数作用域里变量的引用（非全局变量），称内部函数为闭包。  
 闭包，又称闭包函数或者闭合函数，其实和前面讲的嵌套函数类似，不同之处在于，闭包中外部函数返回的不是一个具体的值，而是一个函数。一般情况下，返回的函数会赋值给一个变量，这个变量可以在后面被继续执行调用。
 例如，计算某直线上点的值：
 ```
@@ -598,7 +598,7 @@ print (c1())        # 11
 print (c1())        # 12
 ```
 
-也可以写出这样：
+也可以写成这样：
 ```
 def counter(start):
     count = start
@@ -643,7 +643,7 @@ def var_test():
 10
 ()
 ```
-自由变量就是使用的外部变量. __closure__[0].cell_contents 是自由变量的值  
+自由变量就是使用的外部变量. __closure__[0].cell_contents 是自由变量真正的值  
 
 ### 函数和类的区别
 ```
@@ -1214,7 +1214,36 @@ def yield_exp_test():
     for x in it:
         print (x)
 ```
-第一次使用 next() 可以获得 yield 返回值(index)，程序还停留在 yield 处。 使用send ,可以传递值给yield （jump）, 并向下执行程序，此时 send 的返回值是 yield index, (2) , 所以 print (it.send(2)) 输出为 2。程序仍然暂停在 yield.  
+
+输出结果：
+```
+get first value
+0
+=== after get first value ===
+send 2
+jump is 2
+index is 2
+2
+=== after send 2 ===
+next
+jump is None
+index is 3
+3
+=== next ===
+jump is -1
+index is 2
+2
+jump is None
+index is 3
+3
+jump is None
+index is 4
+4
+jump is None
+index is 5
+```
+第一次使用 next() 可以获得 yield 返回值(index)，程序还停留在 yield 处。  
+使用send ,可以传递值给yield （jump）, 并向下执行程序，此时 send 的返回值是 yield index, (2) , 所以 print (it.send(2)) 输出为 2。程序仍然暂停在 yield.  
 再执行 next() 时，程序继续执行，由于不是send, 所以jump 是None,  index 为 3， 返回3 . 这里也可以使用 send(None) 实验。
 
 ## 协程
@@ -1227,3 +1256,150 @@ def yield_exp_test():
 * 协程可以暂停函数的执行，保留上一次调用的状态，是增强型生成器
 * 协程是用户级的任务调度，线程是内核级的任务调度
 * 协程适用于IO密集型程序，不适用于CPU密集型程序的处理
+
+### 异步编程
+python3.4 支持事件循环的方法
+```
+import asyncio
+
+@asyncio.coroutine
+def py34_func():
+    yield from sth()
+```
+怎么用？？？  
+
+python 3.5 中引入了await 取代 yield from 方式。
+```
+import asyncio
+async def py35_coro():
+    await stuff()
+```
+注意：await 接收的对象必须是 awaitable 对象。awaitable 对象定义了`__await__()` 方法。  
+awaitable 对象有三类：
+1. 协程 coroutine
+2. 任务 task
+3. 未来对象 Future
+
+```
+import asyncio
+
+async def main():
+    print('hello')
+    await asyncio.sleep(3)
+    print('world')
+
+def coroutine_test():
+    asyncio.run(main())
+
+if __name__ == "__main__":
+    coroutine_test()
+```
+使用 await asyncio.sleep(3)， 在协程中等待3秒。
+
+[官方文档](https://docs.python.org/zh-cn/3/library/asyncio-task.html)
+
+### aiohttp
+
+```
+import aiohttp
+import asyncio
+
+url = 'http://httpbin.org/get'
+
+async def fetch(client, url):
+    # get 方式请求url
+    async with client.get(url) as resp:
+        assert resp.status == 200
+        return await resp.text()
+
+async def main():
+    # 获取session对象
+    async with aiohttp.ClientSession() as client:
+        html = await fetch(client, url)
+        print(html)
+
+loop = asyncio.get_event_loop()
+task = loop.create_task(main())
+loop.run_until_complete(task)
+# Zero-sleep 让底层连接得到关闭的缓冲时间
+loop.run_until_complete(asyncio.sleep(0))
+loop.close()
+```
+
+```
+# Web Server
+from aiohttp import web
+
+# views
+async def index(request):
+    return web.Response(text='hello aiohttp')
+
+# routes
+def setup_routes(app):
+    app.router.add_get('/', index)
+
+# app
+app = web.Application()
+setup_routes(app)
+web.run_app(app, host='127.0.0.1', port=8080)
+
+
+# 官方文档
+# https://hubertroy.gitbooks.io/aiohttp-chinese-documentation/content/aiohttp%E6%96%87%E6%A1%A3/ServerTutorial.html
+```
+
+```
+import aiohttp
+import asyncio
+
+urls = [
+    'http://httpbin.org',
+    'http://httpbin.org/get',
+    'http://httpbin.org/ip',
+    'http://httpbin.org/headers'
+]
+
+async def  crawler():
+    async with aiohttp.ClientSession() as session:
+        futures = map(asyncio.ensure_future, map(session.get, urls))
+        for task in asyncio.as_completed(futures):
+            print(await task)
+
+if __name__ == "__main__":
+    ioloop = asyncio.get_event_loop()
+    ioloop.run_until_complete(asyncio.ensure_future(crawler()))
+```
+
+```
+# 进程池和协程
+
+from multiprocessing import Pool
+import asyncio
+import time
+
+
+async def test(time):
+    await asyncio.sleep(time)
+
+async def main(num):
+    start_time = time.time()
+    tasks = [asyncio.create_task(test(1)) for proxy in range(num)]
+    [await t for t in tasks]
+    print(time.time() - start_time)
+
+
+def run(num):
+    asyncio.run(main(num))
+
+
+if __name__ == "__main__":
+    start_time = time.time()
+    p = Pool()
+    for i in range(4):
+        p.apply_async(run, args=(2500,))
+    p.close()
+    p.join()
+    print(f'total {time.time() - start_time}')
+```
+
+
