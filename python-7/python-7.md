@@ -1010,9 +1010,161 @@ print (d.__class__)     # <class '__main__.DelDictVal'>
 元类必须继承自type  
 元类必须实现`__new__`方法
 
-## mixin 模式
+### 抽象基类
+基于元类可以实现抽象基类。  
 抽象基类（abstract base class, ABC）用来确保派生类实现了基类中的特定方法。使用抽象基类的好处：
 * 避免继承错误，是类层次易于理解和维护
 * 无法实例化基类
-*  当子类没有完全实现父类的方法，会立即报错，
+* 当子类没有完全实现父类的方法，会立即报错
 
+通过集成ABC 实现抽象基类：
+```
+from abc import ABC
+
+class MyABC(ABC):
+    pass
+```
+
+通过元类实现抽象基类：
+```
+from abc import ABCMeta, abstractclassmethod
+
+class MyABC(metaclass=ABCMeta):
+    @abstractclassmethod
+    def foo(self):
+        pass
+    
+    @abstractclassmethod
+    def bar(self):
+        pass
+    
+class Concrete(MyABC):
+    def foo(self):
+        print("foo")
+    
+c = Concrete()   # builtins.TypeError: Can't instantiate abstract class Concrete with abstract methods bar
+```
+
+### mixin 模式
+python 可以实现动态修改继承关系。
+在程序运行过程中，重定义类的继承，即动态继承。
+动态继承的优点：
+* 可以在不修改任何源代码的情况下，对已有类进行扩展
+* 进行组件的划分： 不同的组件放在不同的类中，当使用到的时候，通过mixin 进行继承
+
+```
+def mixin(Class1, MixinClass):
+    Class1.__bases__ = (MixinClass, )+Class1.__bases__
+    
+class Fclass(object):
+    def text(self):
+        print ("in parents Class")
+        
+class S1class(Fclass):
+    pass
+
+class MixinClass(object):
+    def text(self):
+        return super().text()
+    
+class S2class(S1class, MixinClass):
+    pass
+
+def mixin_test():
+    print ("~"*30)
+    print(f' test1 : S1class MRO : {S1class.mro()}')
+    s1 = S1class()
+    s1.text()  
+    
+    mixin(S1class, MixinClass)
+    print(f' test2 : S1class MRO : {S1class.mro()}')  
+    s1 = S1class()
+    s1.text()
+    
+    print(f' test3 : S2class MRO : {S2class.mro()}')
+    s2 = S2class()
+    s2.text() 
+```
+
+```
+test1 : S1class MRO : [<class '__main__.S1class'>, <class '__main__.Fclass'>, <class 'object'>]
+in parents Class
+ test2 : S1class MRO : [<class '__main__.S1class'>, <class '__main__.MixinClass'>, <class '__main__.Fclass'>, <class 'object'>]
+in parents Class
+ test3 : S2class MRO : [<class '__main__.S2class'>, <class '__main__.S1class'>, <class '__main__.MixinClass'>, <class '__main__.Fclass'>, <class 'object'>]
+in parents Class
+```
+通过修改 `__bases__` 来实现继承关系的修改。  
+
+
+* 《Python GUI Programming with Tkinter》
+```
+# Mixin类无法单独使用，必须和其他类混合使用，来加强其他类
+class Displayer():
+    def display(self, message):
+        print("Displayer:", message)
+
+class LoggerMixin():
+    def log(self, message, filename='logfile.txt'):
+        with open(filename, 'a') as fh:
+            fh.write(message)
+
+    def display(self, message):
+        super(LoggerMixin, self).display(message)
+        self.log(message)
+
+class MySubClass(LoggerMixin, Displayer):
+    def log(self, message):
+        super().log(message, filename='subclasslog.txt')
+
+subclass = MySubClass()
+subclass.display("This string will be shown and logged in subclasslog.txt")
+print(MySubClass.mro())
+```
+
+```
+Displayer: This string will be shown and logged in subclasslog.txt
+[<class '__main__.MySubClass'>, <class '__main__.LoggerMixin'>, <class '__main__.Displayer'>, <class 'object'>]
+```
+Displayer 类的 display 方法使用print 输出打印信息，LoggerMixin 增强了 display，将信息输出到文件。
+
+类似的实现， 在socketserver.py 中，
+```
+class BaseServer:
+    def __init__(self, server_address, RequestHandlerClass):
+        """Constructor.  May be extended, do not override."""
+        self.server_address = server_address
+        self.RequestHandlerClass = RequestHandlerClass
+        self.__is_shut_down = threading.Event()
+        self.__shutdown_request = False
+    
+    def process_request(self, request, client_address):
+        """Call finish_request.
+
+        Overridden by ForkingMixIn and ThreadingMixIn.
+
+        """
+        self.finish_request(request, client_address)
+        self.shutdown_request(request)
+
+class ThreadingMixIn:
+    def process_request(self, request, client_address):
+    ...
+
+
+class TCPServer(BaseServer):
+    ...
+    pass
+
+class HTTPServer(socketserver.TCPServer):
+    ...
+    pass
+
+class ThreadedHttpServer(ThreadingMixIn,HTTPServer):
+    pass
+
+server = ThreadedHttpServer(addr,recvFrontRequestHandler)
+server.serve_forever()
+```
+
+BaseServer 中， process_request 对请求进行处理，然后关闭连接。使用 ThreadingMixIn 后， process_request 被 Overridden， 接收到请求后，创建线程来处理。
