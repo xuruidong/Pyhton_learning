@@ -1033,6 +1033,76 @@ for i in range(5):
 * 装饰器中的类要实现被装饰类所有的方法？
 * 看 装饰器实现的单例模式， 
 
+### 官方文档中装饰器的代码阅读
+```
+# 向一个函数添加属性
+def attrs(**kwds):
+    def decorate(f):
+        for k in kwds:
+            setattr(f, k, kwds[k])
+        return f
+    return decorate
+
+@attrs(versionadded="2.2",
+       author="Guido van Rossum")
+def mymethod(f):
+    pass
+```
+向函数增加了版本作者属性。使用 setattr 为对象添加属性。  
+
+```
+# 函数参数观察器
+import functools
+def trace(f):
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        print(f, args, kwargs)
+        result = f(*args, **kwargs)
+        print(result)
+    return decorated_function
+@trace
+def greet(greeting, name):
+    return '{}, {}!'.format(greeting, name)
+
+greet('better','me')
+```
+不修改函数的结构，对函数增加功能，如打印参数，便于调试。  
+
+* Data Class
+在定义类时，一般的写法，创建对象时传参，在初始化函数中接收参数，赋值给成员变量。在判断两个对象是否相等时，依次比较变量。
+```
+class MyClass:
+    def __init__(self, var_a, var_b):
+        self.var_a = var_a
+        self.var_b = var_b
+
+    def __eq__(self, other):
+        if self.__class__ is not other.__class__:
+            return False
+        return (self.var_a, self.var_b) == (other.var_a, other.var_b)
+        
+var3 = MyClass('x','y')
+var4 = MyClass('x','y')
+
+var3 == var4
+```
+
+引入 Data Class 后，用 @dataclass 装饰类
+```
+from dataclasses import dataclass
+@dataclass
+class MyClass:
+    var_a: str
+    var_b: str
+
+var_1 = MyClass('x','y')
+var_2 = MyClass('x','y')
+
+# 不用在类中重新封装 __eq__
+
+var_1 == var_2
+# 存在的问题: var_a var_b不能作为类属性访问
+```
 
 ## 对象协议
 由魔术方法来实现对象协议。鸭子类型。
