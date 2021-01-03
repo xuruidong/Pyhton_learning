@@ -104,7 +104,15 @@ $ python manage.py runserver 0.0.0.0:9000
 [For more information on this file](https://docs.djangoproject.com/en/2.2/topics/settings/)  
 [For the full list of settings and their values](https://docs.djangoproject.com/en/2.2/ref/settings/)
 
+获取路径：
+```
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+```
 debug 模式只能服务一个连接？
+debug 模式不能用于生产环境  
+
+ALLOWED_HOSTS = [] 设置域名访问权限  
 
 app 列表
 ```
@@ -124,6 +132,8 @@ INSTALLED_APPS = [
     # 注册自己的APP
 ]
 ```
+注意app 的顺序，自己写的app, 一般放在后面。 如果不写，Django 可能会识别不到自己写的app.   
+
 
 中间件是request 和 response 对象之间的钩子  
 url匹配配置， 默认使用 MyDjango.urls， 即 urls.py  
