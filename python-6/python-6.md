@@ -570,48 +570,99 @@ books函数中，使用ORM 方式获取了Name表中的所有数据，使用rend
 ## douban评论展示功能示例
 ### urlconf与models配置include
 
-根据不同的功能，拆分成不同的app, 使用 urlconf 来配置路径（一般使用include 加载app下的urls.py 中的urlconf）。注意路径后面加“/”。  
+根据不同的功能，拆分成不同的app, 使用 urlconf 来配置路径（一般使用 include 加载 app 下的 urls.py 中的urlconf）。注意路径后面加“/”。  
 
-对于已经存在的MySQL表，可以使用  python manage.py inspectdb 将数据库中表结构转换成模型。
-通过 inspectdb 转换得到的model 类中会有一个元类 Meta 。
+对于已经存在的MySQL表，可以使用  python manage.py inspectdb 将数据库中表结构转换成模型。  
+通过 inspectdb 转换得到的model 类中会有一个元类 Meta 。  
 元数据，class Meta,  中的数据不属于数据库中的字段，设置 managed=False， 当执行makemigration等操作时，会忽略该表。db_table 可以用来指定表名, 默认值是 app名_表名。
 
 ### views 视图的编写
 在urlconf 中配置 url 和view 的关系。在 virw 中会导入models, 用于数据库的查询。
 t1.objects.all()
-...
+使用响应的方法将需要的数据取出，
+```
+from .models import T1
+def books_short(request):
+    ###  从models取数据传给template  ###
+    shorts = T1.objects.all()
+    # 评论数量
+    counter = T1.objects.all().count()
 
-### 结合bootsstrap模板进行开发
+    # 平均星级
+    # star_value = T1.objects.values('n_star')
+    star_avg =f" {T1.objects.aggregate(Avg('n_star'))['n_star__avg']:0.1f} "
+    # 情感倾向
+    sent_avg =f" {T1.objects.aggregate(Avg('sentiment'))['sentiment__avg']:0.2f} "
+
+    # 正向数量
+    queryset = T1.objects.values('sentiment')
+    condtions = {'sentiment__gte': 0.5}
+    plus = queryset.filter(**condtions).count()
+
+    # 负向数量
+    queryset = T1.objects.values('sentiment')
+    condtions = {'sentiment__lt': 0.5}
+    minus = queryset.filter(**condtions).count()
+
+    # return render(request, 'douban.html', locals())
+    return render(request, 'result.html', locals())
+```
+
+[文档](https://docs.djangoproject.com/zh-hans/3.1/topics/db/queries/)
+Managers 只能通过模型类访问，而不是通过模型实例，目的是强制分离 “表级” 操作和 “行级” 操作。
+querySet 可以使用 dict 的方法。
+
+filter(**kwargs)， 传入一个字典类型的参数  
+
+[聚合](https://docs.djangoproject.com/zh-hans/3.1/topics/db/aggregation/)
+
+### 结合 bootsstrap 模板进行开发
+在 view 中取出数据，然后传递给 template 进行展示。
+[Bootstrap 中文网](https://www.bootcss.com/)
+[菜鸟教程](https://www.runoob.com/bootstrap/bootstrap-tutorial.html)
+
+在 templates 目录下存放一系列的 html 文件，在 static 目录下放入 css,js,fonts 等文件。
 。。。
 
 ## 如何阅读Django 的源代码
 针对某一单一功能来追踪，比如 runserver, 
 
-官方文档－－Models（模型层）--- QuerySet---Manager
+解析参数， 根据参数加载模块（如 runserver）, 检查app, 实例化 wSGIserver, 
+
+在 manager.py：main() 中， 首先加载环境变量，然后import execute_from_command_line, 使用 try except 处理异常，如未安装 Django。
+
+execute_from_command_line：
+fetch_command：
+load_command_class
+
+官方文档 －－Models（模型层）--- QuerySet---Manager
+
 ---
 ## Django Web 管理界面
 
 管理页面的设计哲学：
-* 管理后台是一项缺乏创造性和乏味的工作，Django 全自动地根据模型创建后台界面。
+* 管理后台是一项缺乏创造性和乏味的工作，Django 可以根据模型自动地创建后台界面来对数据进行管理。
 * 管理界面不是为了网站的访问者，而是管理者准备的。
 
 ### 创建Web 管理界面 
 
 在settings.py 中，INSTALLED_APPS，django.contrib.admin 就是内置的后台管理系统。
-保证数据库连接正常。 
 
-执行 python manage.py migrate，将管理系统相关数据库同步到数据库中。
-添加管理员帐户，设置密码： $python manage.py createsuperuser
-将Model导入到管理系统中：
+搭建管理界面步骤：
+1. 保证数据库连接正常
+2. 执行 python manage.py migrate，将管理系统相关数据库同步到数据库中。
+3. 添加管理员帐户，设置密码： $python manage.py createsuperuser
+4. 将Model导入到管理系统中：
 例如在 index app 中，index/admin.py中, 导入模型，然后注册。
 ```
 from .models import Person
 admin.site.register(Person)
 ```
-之后通过请求 http://127.0.0.1:8000/admin ，可进入登录界面。可以对Model进行CRUD管理。
-查看官方文档，了解更多。
+5. 之后通过请求 http://127.0.0.1:8000/admin ，可进入登录界面。可以对Model进行CRUD管理。
 
-### 表单
+查看官方文档， 文档--快速入门---入门教程---[第7节：自定义admin 站点](https://docs.djangoproject.com/zh-hans/3.1/intro/tutorial07/)
+
+## 表单
 
 在使用Django 的后台管理界面管理Model 时，“save” 是一个提交的操作，用来将数据写入数据库。这个就是 HTML 的表单功能。提交时，一般使用的是 HTTP post 方式。  
 一个表单实例 test.html：
@@ -622,9 +673,10 @@ admin.site.register(Person)
 	<input type="submit" value="登录">
 </form>
 ```
-提交到 result.html ，点击“登录”后会跳转到 result.html.  
-实现表单时重复性工作，Django 可以自动生成。
-表单提交数据到达后端时，需要进行数据的校验，然后存到数据库中。对数据的校验可以在请求中间件中进行，将不合法的数据过滤等操作。Django 使用 Form 对象定义表单，可以用Python 代码生成HTML 代码。由于Django 可以控制生成的表单，所以更容易将 form 和后边的Model 进行关联。  
+提交到 result.html ，使用浏览器打开 test.html 点击“登录”后会跳转到 result.html.  
+
+实现表单也是重复性工作，Django 可以自动生成。
+表单提交数据到达后端时，需要进行数据的校验，然后存到数据库中。对数据的校验可以在请求中间件中进行，将不合法的数据过滤等操作。Django 使用 Form 对象定义表单，可以用Python 代码生成HTML 代码。由于Django 可以控制生成的表单，所以更容易将 form 和后边的 Model 进行关联。  
 
 一个 form 示例，form.py:
 ```
@@ -657,11 +709,11 @@ class LoginForm(forms.Form):
     <html lang="en">
     <head>
         <meta charset=UTF-8">
-        <TITLE>Title</TITLE>title>
+        <TITLE>Title</TITLE>
     </head>
     <body>
     <p>Input you username and password</p>
-    <form action="/login/" method="post">
+    <form action="/login" method="post">
         {% csrf_token %}
         {{ form }}
         <input type="submit" value="登录">
@@ -669,14 +721,41 @@ class LoginForm(forms.Form):
     </body>
     </html>
    ```
-   在 html 中，提交到 /login, 使用 POST 方式。 在form 元素中， 引入 csrf_token 和 form。这里的 form 就是指 view 中定义的 login_form。action 的地址，后面是否以“/” 结尾，有区别。没有“/”， 可能会报错：You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set
+   在 html 中，提交到 /login, 使用 POST 方式。 在form 元素中， 引入 csrf_token 和 form。这里的 form 就是指 view 中定义的 login_form, 由 render 传入。action 的地址，后面是否以“/” 结尾，有区别。没有“/”， 可能会报错：You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set
 4. 提交表单部分
    接下来实现提交表单后的内容。 由于还是提交到 login， 与获取页面时的 url 相同，所以还是在view::login 中实现相应的逻辑。由于提交表单使用的是POST方式，所以根据 request.method 来判断。
-   。。。
+   ```
+   def login(request, **kwargs):
+    if request.method == "GET":
+        login_form = form.LoginForm()
+        return render(request, 'logins.html', {"form": login_form})
+    elif request.method == "POST":
+        return HttpResponse("Hello World! LOGIN OK")
+    return HttpResponse("hello login")
+   ```
+   如果要提交到其他页面，如 login2, 则先要在 urls.py 中配置路径和对应的 view, 并且实现 view 。
+   ```
+    from .form import LoginForm
+    from django.contrib.auth import authenticate, login
+    def login2(request, **kwargs):
+        if request.method == "POST":
+            login_form = LoginForm(request.POST)
+            if login_form.is_valid():
+                #  get return value of the form
+                cd = login_form.cleaned_data 
+                user = authenticate(username=cd['username'], password=cd['password'])
+                if user:
+                    
+                    login(request, user)  
+                    return HttpResponse('login success')
+                else:
+                    return HttpResponse('login failed')        
+        return HttpResponse("hello login")
+   ```
 
 ### 表单 CSRF 功能
-[官方文档](https://docs.djangoproject.com/zh-hans/2.2/ref/csrf/)
-在提交表单时，可能会出现 403 Forbidden错误。 可能是Django 认为POST请求时CSRF. CSRF(跨站请求攻击)，会导致网站被恶意利用或者泄露用户个人信息等危害。为了防止CSRF, Django 默认使用了中间件 'django.middleware.csrf.CsrfViewMiddleware' 进行CSRF 验证， 当发现跨站请求，就会返回403.
+[官方文档](https://docs.djangoproject.com/zh-hans/2.2/ref/csrf/)  
+在提交表单时，可能会出现 403 Forbidden错误（提交后，再次刷新页面）。 可能是Django 认为POST请求是CSRF. CSRF(跨站请求攻击)，会导致网站被恶意利用或者泄露用户个人信息等危害。为了防止CSRF, Django 默认使用了中间件 'django.middleware.csrf.CsrfViewMiddleware' 进行CSRF 验证， 当发现跨站请求，就会返回403.
 在html 页面中增加 {% csrf_token %}，
 --- 会在POST 请求的页面加上 scrf token,  所以在之前的实例中，html 页面中加入了 csrf_token
 在html 页面中增加 {% csrf_token %}，为什么会防止跨站攻击？ 这个功能是在中间件中实现的。 --- 
@@ -695,11 +774,11 @@ def ...
 
 使用Ajax 进行POST 提交时，也需要csrf_token
 
-### 用户认证
+## 用户认证
 
 Django 默认集成了用户认证功能，如用户注册，创建相应的数据库表，用户校验，会话等功能。
 
-#### 用户注册
+### 用户注册
 使用 Django 提供的Shell，`python manage.py shell`,
 ``` 
 from django.contrib.auth.models import User
@@ -708,11 +787,12 @@ user.save()
 ```
 先导入验证模块，引入User，
 User.objects 就是 ORM 查询管理器 ，使用查询管理器的create_user 来创建一个对象，必须要传参 3个，
-保存注册信息到数据库.
+保存注册信息到数据库.  
 可以使用 authenticate(username = 'jerry', password = 'jerrypasswd') 来验证，验证成功，返回一个User对象，验证失败，返回空。
 在 settings.py 中可以看到，实现验证功能的中间件是 django.contrib.auth.middleware.AuthenticationMiddleware, 当进行migrate 时进行迁移，在数据库中创建相应的表。
+保存在 auth_user 表中。
 
-#### 在view 中的代码实现
+### 在view 中的代码实现
 ```
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -752,6 +832,7 @@ authenticate() 可以用来进行用户名密码验证，会去数据库中查�
 login() 函数用来登录，实现会话功能。
 
 
+## 信号
 
 
 

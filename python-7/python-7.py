@@ -326,7 +326,80 @@ def meta_test():
     d = DelDictVal()
     print (d.abc)
     print (d.__class__)
+
+
+from abc import ABCMeta, abstractclassmethod
+
+class MyABC(metaclass=ABCMeta):
+    @abstractclassmethod
+    def foo(self):
+        pass
     
+    @abstractclassmethod
+    def bar(self):
+        pass
+'''    
+class Concrete(MyABC):
+    def foo(self):
+        print("foo")
+    
+c = Concrete()
+'''
+# -------------  mixin test  ---------------
+def mixin(Class1, MixinClass):
+    Class1.__bases__ = (MixinClass, )+Class1.__bases__
+    
+class Fclass(object):
+    def text(self):
+        print ("in parents Class")
+        
+class S1class(Fclass):
+    pass
+
+class MixinClass(object):
+    def text(self):
+        return super().text()
+    
+class S2class(S1class, MixinClass):
+    pass
+
+def mixin_test():
+    print ("~"*30)
+    print(f' test1 : S1class MRO : {S1class.mro()}')
+    s1 = S1class()
+    s1.text()  
+    
+    mixin(S1class, MixinClass)
+    print(f' test2 : S1class MRO : {S1class.mro()}')  
+    s1 = S1class()
+    s1.text()
+    
+    print(f' test3 : S2class MRO : {S2class.mro()}')
+    s2 = S2class()
+    s2.text()  
+    
+# ~~~~~~~~~~~~~~~~~~
+class Displayer():
+    def display(self, message):
+        print("Displayer:", message)
+
+class LoggerMixin():
+    def log(self, message, filename='logfile.txt'):
+        with open(filename, 'a') as fh:
+            fh.write(message)
+
+    def display(self, message):
+        super(LoggerMixin, self).display(message)
+        self.log(message)
+
+class MySubClass(LoggerMixin, Displayer):
+    def log(self, message):
+        super().log(message, filename='subclasslog.txt')
+        
+def mixin_test2():
+    subclass = MySubClass()
+    subclass.display("This string will be shown and logged in subclasslog.txt")
+    print(MySubClass.mro())
     
 if __name__ == "__main__":
     # class_test()
@@ -337,9 +410,9 @@ if __name__ == "__main__":
     # test()
     # singleton_test()
     # single_test()
-    meta_test()
+    # meta_test()
     # mor_test()
     # type_test()
-    
+    mixin_test2()
     
     print("===== end =====")
