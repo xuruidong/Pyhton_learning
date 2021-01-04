@@ -834,10 +834,93 @@ login() 函数用来登录，实现会话功能。
 
 ## 信号
 
+### 信号的作用
+当多个独立的程序对某一个事件感兴趣时，可以引入信号来处理。如果不使用信号，则需要每个程序对事件编写相应的处理代码。   
+当发生事件时，通知应用程序   
+支持若干信号发送者通知一组接收者
+解耦
+
+[Django 内建信号](https://docs.djangoproject.com/zh-hans/3.1/ref/signals/)
+pre_init， Whenever you instantiate a Django model, this signal is sent at the beginning of the model's `__init__()` method.
+
+post_init, Like pre_init, but this one is sent when the `__init__()` method finishes.
+
+...
+
+### 信号与程序的关联
+在自己编写的 views.py 中，
+1. 使用 connect 方法将信号和回调函数进行绑定
+2. 采用装饰器方式
+
+```
+# receiver
+def my_callback1(sender, **kwargs):
+	print("Request started!")
+
+# connect
+from django.core.signals import request_started
+request_started.connect(my_callback1)
+
+from django.core.signals import request_finished
+from django.dispatch import receiver
+
+@receiver(request_finished)
+def my_callback2(sender, **kwargs):
+	print("Request finished!")
+```
+
+## 中间件
+对请求和响应进行拦截操作。
+
+中间件的编写
+创建 middlewares.py 文件，编写中间件类，继承自 MiddlewarMixin，
+```
+from django.http import HttpResponse
+from django.utils.deprecation import MiddlewareMixin
+
+class MiddleTest(MiddlewareMixin):
+    def process_request(self, request):
+        print("====== Middleware request")
+
+    def process_view(self, request, callback, callback_args, callback_kwargs):
+        print("=====Middleware process view")
+
+    def process_exception(self, request, exception):
+        print ("====Middleware exception")
+        
+    def process_response(self, request, response):
+        print ("===Middleware response")
+        return response
+```
+process_response 要返回 response。   
+在 settings.py 中的 MIDDLEWARE 添加中间件。
 
 
+## Django 生成环境部署
+可以使用 Nginx + Django。
+gunicorn
+安装： pip install gunicorn
+在项目目录中执行： gunicorn MyDjango.wsgi
+使用说明：gunicorn --help
 
+## Django celery
+### Celery 介绍
+实现 Django 定时任务。   
+celery 是分布式消息队列。利用 celery 可以实现定时任务。并且可以在admin 管理界面上修改。   
+Celery 架构图：
+[Celery 架构图](!)
+生产者可以是“异步任务”，也可以是“定时任务”。如果要实现定时任务，需要用到 “Celery Beat” 功能。Celery Beat 产生定时任务交给消息中间件，然后会执行提前注册号的回调函数。消费者消费任务后，可以做一些存储操作，如存储在 redis 中。
+### Celery 安装
+由于用到redis， 先安装 redis.
+redis 设置密码  requirepass.
 
+pip install celery
+pip install redis==2.10.6
+pip install celery-with-redis
+pip install django-celery
+
+由于在 Pyhton 3.7 中， async 已经成为了关键字，所以以 async 为包名或模块名，变量名，都会导致出错。而在 python 3.7 之前不会出错。在安装celcry 过程中，会安装一个名为 kombu 的库，在 D:\Program Files\Python\Python37\Lib\site-packages\kombu 目录下有 async 包，这会出现导入问题。要将 async 及其包内文件中出现 async 的变量进行改名
+### Celery 与 Django 结合
 
 
 end
