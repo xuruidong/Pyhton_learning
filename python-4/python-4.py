@@ -106,24 +106,32 @@ def pandas_adjust_test():
                  "B": [None, 2, 4, 3],
                  "C": [4, 3, 8, 5],
                  "D": [5, 4, 2, None]})
+    print('#' * 20)
+    print ("")
+    ndf = df['B']
+    print (ndf)
 
     ndf = df[['A', 'C']]
     print (ndf)
     
     ndf = df.iloc[:, [0, 1]]
     print (ndf)
-    
+
+    print('###################')
+    print ("row choice")
     ndf = df.loc[ [0, 2] ]
     print (ndf)
     ndf = df.loc[0:2]
     print (ndf)
-    print ('*' * 10)
-    
+    print ('*' * 20)
+
+    print('##### compare #####')
     ndf = df[df['A'] > 4]
     print (ndf)
     ndf = df[(df['A'] > 3) & (df['C'] > 4)]
     print (ndf)
-    
+
+    print('##### replace #####')
     ndf = df.replace(4, 40)
     print (ndf)
     ndf = df.replace(np.nan, 100)
@@ -134,12 +142,13 @@ def pandas_adjust_test():
     df.replace({4:400,5:500,8:800})    
     
 
+    print('##### sort #####')
     ndf = df.sort_values(by=['A'], ascending=False)
     print (ndf)
     # 多列排序
     df.sort_values(by=['A', 'C'], ascending=[True, False])
 
-    
+    print('##### drop #####')
     # 删除
     # 删除列
     df.drop( 'A' ,axis = 1)
@@ -150,35 +159,106 @@ def pandas_adjust_test():
     # 删除特定行
     df [  df['A'] < 4 ]
     
-    
+    print('##### swap #####')
     # 行列互换
-    df.T
-    df.T.T    
+    print(df.T)
+    print(df.T.T)
+
+    df4 = pd.DataFrame([
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+    ],
+        columns=['one', 'two', 'three'],
+        index=['first', 'second']
+    )
+    print (df4)
+    print (df4.stack())
+    print (df4.unstack())
+    print (df4.stack().reset_index())
     
-    
+def pandas_operate_test():
+    df = pd.DataFrame({"A": [5, 3, None, 4],
+                 "B": [None, 2, 4, 3],
+                 "C": [4, 3, 8, 5],
+                 "D": [5, 4, 2, None]})
+    print('#' * 20)
+    print (df['A'] + df['C'])
+    print('#' * 20)
+    print (df["B"] + 7)
+    print('#' * 20)
+    print (df['A'] > 4)
+    print('#' * 20)
+    print (df.count())
+
 def group_test():
-    data = [{'a': 1, 'b': 2, 'c': 3, 'd': 4, },
-     {'a': 5, 'b': 6, 'c': 7, 'd': 8, },
-     {'a': 1, 'b': 9, 'c': 7, 'd': 4, }, ]
+    data = [{'name': 'Jame', 'age': 9, 'class': 3, 'd': 4, },
+            {'name': 'Tom', 'age': 17, 'class': 7, 'd': 7, },
+            {'name': 'Dave', 'age': 9, 'class': 7, 'd': 4, }, ]
 
     df = pd.DataFrame(data)
-    print (data)
-    
-    ret = df.groupby('a')
+    print (df)
+
+    print ('#' * 20)
+    ret = df.groupby('age')
     print (type(ret))
     print (ret.groups)
 
     print ("------------")
     print (ret.count())
 
-    print (ret.aggregate({'a': 'count', 'b': 'sum'}))
+    print (ret.aggregate({'class': 'count', 'd': 'sum'}))
 
     print ("*" * 20)
+    print ("------  mean  ------")
     print (ret.agg("mean"))
+    print ("------  mean to_dict ------")
     print (ret.mean().to_dict())
     print (ret.transform("mean"))
     
+def mutiple_test():
+    group = ['x', 'y', 'z']
+    data1 = pd.DataFrame({
+        "group":[group[x] for x in np.random.randint(0,len(group),10)] ,
+        "age":np.random.randint(15,50,10)
+        })
+    
+    data2 = pd.DataFrame({
+        "group":[group[x] for x in np.random.randint(0,len(group),10)] ,
+        "salary":np.random.randint(5,50,10),
+        })
+    
+    data3 = pd.DataFrame({
+        "group": [group[x] for x in np.random.randint(0, len(group), 10)],
+        "age": np.random.randint(15, 50, 10),
+        "salary": np.random.randint(5, 50, 10),
+    })
 
+    print ("data1: \n", data1)
+    print ("data2: \n", data2)
+    print ("data3: \n", data3)
+
+    print ("merge data1 and data2")
+    print (pd.merge(data1, data2))
+    
+    print ("merge data2 and data3")
+    print (pd.merge(data3, data2, on='group'))
+    print('#' * 20)
+    print (pd.merge(data3, data2))
+    
+    # 连接键类型，解决没有公共列问题
+    print(pd.merge(data3, data2, left_on='age', right_on='salary'))
+
+   
+    # 连接方式
+    # 内连接，不指明连接方式，默认都是内连接
+    pd.merge(data3, data2, on= 'group', how='inner')
+    # 左连接 left
+    # 右连接 right
+    # 外连接 outer
+    
+    # 纵向拼接
+    pd.concat([data1, data2])
+    
 def output_test():
     data = [{'a': 1, 'b': 2, 'c': 3, 'd': 4, },
      {'a': 5, 'b': 6, 'c': 7, 'd': 8, },
@@ -258,18 +338,26 @@ def test():
     del table1['id']
     print (table1)
     
-    
+
+def snowNLP_test():
+    from snownlp import SnowNLP
+    text = '[  3] 10.0-11.0 sec   128 KBytes  1.05 Mbits/sec'
+    s = SnowNLP(text)
+    print (s.words)
     
 if __name__ == "__main__":
     # sklearn_test()
     # file_path_test()
     # series_test()
-    DateFrame_test()
+    # DateFrame_test()
     # pre_proc_test()
     # pandas_adjust_test()
-    #group_test()
+    # pandas_operate_test()
+    # group_test()
+    # mutiple_test()
     # output_test()
     # draw_test()
     # test()
+    snowNLP_test()
     print ("===  end  ===")
     

@@ -231,6 +231,8 @@ def read_from_mysql():
 
 ## Pandas 数据预处理
 缺失值处理  重复值处理
+https://pandas.pydata.org/pandas-docs/stable/refernce/series.html
+
 ### 缺失值处理
 ```
 import numpy as np
@@ -279,19 +281,231 @@ def pre_proc_test():
 
 
 ## Pandas 数据调整
-* 通过列名，可以筛选出相应的列，需要使用 list 指定列
-* 可以通过列序号来筛选列， 
-* DataFrame.loc[] 可以用来行选择， 参数为 
-* 比较
-* replace 替换。可以替换空值，单值，多值（list 指定被替换的值）
-* 排序。sort_values， 通过“by” 来指定排序的参考列，ascending 来指定升序或降序。 还有sort_index ???
-* drop 删除。
+```
+def pandas_adjust_test():
+    df = pd.DataFrame({"A": [5, 3, None, 4],
+                 "B": [None, 2, 4, 3],
+                 "C": [4, 3, 8, 5],
+                 "D": [5, 4, 2, None]})
+    print('#' * 20)
+    print ("")
+    ndf = df['B']
+    print (ndf)
 
-<font color=#ff0000 size=5 face="黑体">未完成， 再看</font>
+    ndf = df[['A', 'C']]
+    print (ndf)
+    
+    ndf = df.iloc[:, [0, 1]]
+    print (ndf)
+
+    print('###################')
+    print ("row choice")
+    ndf = df.loc[ [0, 2] ]
+    print (ndf)
+    ndf = df.loc[0:2]
+    print (ndf)
+    print ('*' * 20)
+
+    print('##### compare #####')
+    ndf = df[df['A'] > 4]
+    print (ndf)
+    ndf = df[(df['A'] > 3) & (df['C'] > 4)]
+    print (ndf)
+
+    print('##### replace #####')
+    ndf = df.replace(4, 40)
+    print (ndf)
+    ndf = df.replace(np.nan, 100)
+    print (ndf)
+    ndf = df.replace([1, 2, 3], 200)
+    print (ndf)
+    # 多对多替换
+    df.replace({4:400,5:500,8:800})    
+    
+
+    print('##### sort #####')
+    ndf = df.sort_values(by=['A'], ascending=False)
+    print (ndf)
+    # 多列排序
+    df.sort_values(by=['A', 'C'], ascending=[True, False])
+
+    print('##### drop #####')
+    # 删除
+    # 删除列
+    df.drop( 'A' ,axis = 1)
+    
+    # 删除行
+    df.drop( 3 ,axis = 0)
+    
+    # 删除特定行
+    df [  df['A'] < 4 ]
+    
+    print('##### swap #####')
+    # 行列互换
+    print(df.T)
+    print(df.T.T)
+
+    df4 = pd.DataFrame([
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f']
+    ],
+        columns=['one', 'two', 'three'],
+        index=['first', 'second']
+    )
+    print (df4)
+    print (df4.stack())
+    print (df4.unstack())
+    print (df4.stack().reset_index())
+```
+```
+####################
+
+0    NaN
+1    2.0
+2    4.0
+3    3.0
+Name: B, dtype: float64
+     A  C
+0  5.0  4
+1  3.0  3
+2  NaN  8
+3  4.0  5
+     A    B
+0  5.0  NaN
+1  3.0  2.0
+2  NaN  4.0
+3  4.0  3.0
+###################
+row choice
+     A    B  C    D
+0  5.0  NaN  4  5.0
+2  NaN  4.0  8  2.0
+     A    B  C    D
+0  5.0  NaN  4  5.0
+1  3.0  2.0  3  4.0
+2  NaN  4.0  8  2.0
+********************
+##### compare #####
+     A   B  C    D
+0  5.0 NaN  4  5.0
+     A    B  C   D
+3  4.0  3.0  5 NaN
+##### replace #####
+      A     B   C     D
+0   5.0   NaN  40   5.0
+1   3.0   2.0   3  40.0
+2   NaN  40.0   8   2.0
+3  40.0   3.0   5   NaN
+       A      B  C      D
+0    5.0  100.0  4    5.0
+1    3.0    2.0  3    4.0
+2  100.0    4.0  8    2.0
+3    4.0    3.0  5  100.0
+       A      B    C      D
+0    5.0    NaN    4    5.0
+1  200.0  200.0  200    4.0
+2    NaN    4.0    8  200.0
+3    4.0  200.0    5    NaN
+##### sort #####
+     A    B  C    D
+0  5.0  NaN  4  5.0
+3  4.0  3.0  5  NaN
+1  3.0  2.0  3  4.0
+2  NaN  4.0  8  2.0
+##### drop #####
+##### swap #####
+     0    1    2    3
+A  5.0  3.0  NaN  4.0
+B  NaN  2.0  4.0  3.0
+C  4.0  3.0  8.0  5.0
+D  5.0  4.0  2.0  NaN
+     A    B    C    D
+0  5.0  NaN  4.0  5.0
+1  3.0  2.0  3.0  4.0
+2  NaN  4.0  8.0  2.0
+3  4.0  3.0  5.0  NaN
+
+       one two three
+first    a   b     c
+second   d   e     f
+first   one      a
+        two      b
+        three    c
+second  one      d
+        two      e
+        three    f
+dtype: object
+one    first     a
+       second    d
+two    first     b
+       second    e
+three  first     c
+       second    f
+dtype: object
+  level_0 level_1  0
+0   first     one  a
+1   first     two  b
+2   first   three  c
+3  second     one  d
+4  second     two  e
+5  second   three  f
+```
+* 通过列名，可以筛选出相应的列，如果是多个列，需要使用 list 指定列
+* 可以通过列序号来筛选列，df.iloc[:, [0, 1]] , ":"表示所有行，第1，2列
+* DataFrame.loc[] 可以用来行选择， 参数为行号
+* 比较， 通过比较来筛选数据
+* replace 替换。可以替换空值，单值，多值（list 指定被替换的值）。多对多替换使用字典
+* 排序。sort_values， 通过“by” 来指定排序的参考列，ascending 来指定升序或降序。 还有sort_index ???
+* drop 删除。可以通过列名或者行号删除，也可以指定条件删除
+* 行列互换
+* 数据透视表
+
 
 ## Pandas 基本操作
-[计算工具说明](https://pandas.pydata.org/docs/user_guide/computation.html#method-summary)
 
+```
+def pandas_operate_test():
+    df = pd.DataFrame({"A": [5, 3, None, 4],
+                 "B": [None, 2, 4, 3],
+                 "C": [4, 3, 8, 5],
+                 "D": [5, 4, 2, None]})
+    print('#' * 20)
+    print (df['A'] + df['C'])
+    print('#' * 20)
+    print (df["B"] + 7)
+    print('#' * 20)
+    print (df['A'] > 4)
+    print('#' * 20)
+    print (df.count())
+```
+```
+####################
+0    9.0
+1    6.0
+2    NaN
+3    9.0
+dtype: float64
+####################
+0     NaN
+1     9.0
+2    11.0
+3    10.0
+Name: B, dtype: float64
+####################
+0     True
+1    False
+2    False
+3    False
+Name: A, dtype: bool
+####################
+A    3
+B    3
+C    4
+D    3
+dtype: int64
+```
+可进行列与列，列与常数之间的运算， 比较.空值不参与运算。
+更多内容参考[计算工具说明](https://pandas.pydata.org/docs/user_guide/computation.html#method-summary)
 
 ## Pandas 分组和聚合
 数据集一般是列表嵌套字典的形式，如表格
@@ -305,31 +519,63 @@ def pre_proc_test():
 
 ```
 def group_test():
-    data = [{'a': 1, 'b': 2, 'c': 3, 'd': 4, },
-     {'a': 5, 'b': 6, 'c': 7, 'd': 8, },
-     {'a': 1, 'b': 9, 'c': 7, 'd': 4, }, ]
+    data = [{'name': 'Jame', 'age': 9, 'class': 3, 'd': 4, },
+            {'name': 'Tom', 'age': 17, 'class': 7, 'd': 7, },
+            {'name': 'Dave', 'age': 9, 'class': 7, 'd': 4, }, ]
 
     df = pd.DataFrame(data)
-    print (data)
-    
-    ret = df.groupby('a')
+    print (df)
+
+    print ('#' * 20)
+    ret = df.groupby('age')
     print (type(ret))
     print (ret.groups)
 
     print ("------------")
     print (ret.count())
 
-    print (ret.aggregate({'a': 'count', 'b': 'sum'}))
+    print (ret.aggregate({'class': 'count', 'd': 'sum'}))
 
     print ("*" * 20)
+    print ("------  mean  ------")
     print (ret.agg("mean"))
+    print ("------  mean to_dict ------")
     print (ret.mean().to_dict())
     print (ret.transform("mean"))
 ```
-
-* 通过groupby方法来进行分组，返回的是一个 pandas.core.groupby.generic.DataFrameGroupBy 对象， 通过属性 groups 来得到分组信息
+```
+ name  age  class  d
+0  Jame    9      3  4
+1   Tom   17      7  7
+2  Dave    9      7  4
+####################
+<class 'pandas.core.groupby.generic.DataFrameGroupBy'>
+{9: Int64Index([0, 2], dtype='int64'), 17: Int64Index([1], dtype='int64')}
+------------
+     name  class  d
+age                
+9       2      2  2
+17      1      1  1
+     class  d
+age          
+9        2  8
+17       1  7
+********************
+------  mean  ------
+     class  d
+age          
+9        5  4
+17       7  7
+------  mean to_dict ------
+{'class': {9: 5, 17: 7}, 'd': {9: 4, 17: 7}}
+   class  d
+0      5  4
+1      7  7
+2      5  4
+```
+* 通过groupby方法来进行分组，返回的是一个 pandas.core.groupby.generic.DataFrameGroupBy 对象， 通过属性 groups 来得到分组信息。对学生信息使用年龄分组，得到两组信息，9和17
 * count 方法用来统计数量
-* 分组后对某列进行求和  groupby().aggregate()
+* 分组后对某列进行求和、计数等操作  groupby().aggregate()
 * 分组后求平均值 groupby().aggregate(“mean”) 或者 groupby().mean()
 * 将处理结果转化为 dict  , to_dict()
 * transform 和 agg 的区别。在结果上， transform 不会按组合并
@@ -339,10 +585,60 @@ def group_test():
 
 ## Pandas 多表拼接
 
+```
+def mutiple_test():
+    group = ['x', 'y', 'z']
+    data1 = pd.DataFrame({
+        "group":[group[x] for x in np.random.randint(0,len(group),10)] ,
+        "age":np.random.randint(15,50,10)
+        })
+    
+    data2 = pd.DataFrame({
+        "group":[group[x] for x in np.random.randint(0,len(group),10)] ,
+        "salary":np.random.randint(5,50,10),
+        })
+    
+    data3 = pd.DataFrame({
+        "group": [group[x] for x in np.random.randint(0, len(group), 10)],
+        "age": np.random.randint(15, 50, 10),
+        "salary": np.random.randint(5, 50, 10),
+    })
+
+    print ("data1: \n", data1)
+    print ("data2: \n", data2)
+    print ("data3: \n", data3)
+
+    print ("merge data1 and data2")
+    print (pd.merge(data1, data2))
+    
+    print ("merge data2 and data3")
+    print (pd.merge(data3, data2, on='group'))
+    print('#' * 20)
+    print (pd.merge(data3, data2))
+    
+    # 连接键类型，解决没有公共列问题
+    print(pd.merge(data3, data2, left_on='age', right_on='salary'))
+
+   
+    # 连接方式
+    # 内连接，不指明连接方式，默认都是内连接
+    pd.merge(data3, data2, on= 'group', how='inner')
+    # 左连接 left
+    # 右连接 right
+    # 外连接 outer
+    
+    # 纵向拼接
+    pd.concat([data1, data2])
+```
+```
+```
+* 使用 merge 方法进行多表拼接.一对一拼接时自动使用公共列来做连接。多对一拼接时需要指定公共列。多对多， 不指定公共列，则查找所有相同的条目
+* 没有公共列的情况，手动指定连接键
+* 
 ## Pandas 输出和制图
 
 ### 输出
-* pandas 可以将处理的数据输出为 dict ,交给 Python 处理。也可以输出到文件。比如 excel(to_exvel()), 需要安装 pip install openpyxl
+* pandas 可以将处理的数据输出为 dict ,交给 Python 处理。也可以输出到文件。比如 excel(to_excel()), 需要安装 pip install openpyxl
 * 输出到excel 时可以指定 sheet 名
 * 默认是添加索引的， 要去掉索引， 设置参数 `index=False`
 * 要导出指定的列， 设置参数 columns
