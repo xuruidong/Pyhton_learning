@@ -1,5 +1,11 @@
 # Python 基础
 
+[python 版本](https://www.python.org/doc/versions)
+
+TensorFlow2
+
+查看特性变化
+
 ### help
 显示对象的帮助信息
 
