@@ -46,8 +46,18 @@ wing 中快速注释 Ctrl+.
 ### Python 魔术方法
 
 ## 虚拟环境
-创建虚拟环境 python -m venv venv1  创建了一个名为 venv1 的虚拟环境
-进入虚拟环境  source venv1/bin/activate, windows 环境下 venv1\Scripts\activate.bat
+1. 创建虚拟环境 
+   python -m venv venv1  创建了一个名为 venv1 的虚拟环境  
+2. 进入（激活）虚拟环境  
+   source venv1/bin/activate, windows 环境下 venv1\Scripts\activate.bat  
+3. 退出虚拟环境
+   deactivate
+4. 在虚拟环境中，安装的第三方库会被安装到Lib/site-packages
+5. 生产环境的部署
+   打包代码文件，如 a.py
+   保证生产环境上的python 版本可用  
+   激活虚拟环境， pip freeze > requirements.txt,  
+   进入生产机的虚拟环境，pip install -r requirements.txt
 
 ## 看文档
 看版本变化
