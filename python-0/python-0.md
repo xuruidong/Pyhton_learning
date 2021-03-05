@@ -6,6 +6,9 @@ TensorFlow2
 
 查看特性变化
 
+python 之禅  import this
+
+
 ### help
 显示对象的帮助信息
 
