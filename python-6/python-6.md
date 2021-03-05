@@ -197,24 +197,6 @@ def index(request):
 简单总结：
 当请求到达，首先找到settings.py 里的ROOT_URLCONF 配置，是MyDjango.urls， 转到MyDjango/urls.py , 在 urlpatterns 中对url 进行匹配，进而匹配到对应的view。如果url 匹配到的是例如include('douban.urls'), 则会到app下找urls.py， 再找到对应的view， 前提是该app 在settings.py 的app列表中注册。view 对请求进行处理，并返回。
 
-## 模块和包
-* 模块：Python 中一个以 .py 结尾的文件就是一个模块，模块中定义了变量、函数等来实现一些类似的功能。Python 有很多自带的模块（标准库）和第三方模块，一个模块可以被其他模块引用，实现了代码的复用性。
-* 包：包是存放模块的文件夹，包中包含 `__init__.py` 和其他模块，`__init__.py` 可为空也可定义属性和方法，在 Python3.3 之前的版本，一个文件夹中只有包含`__init__.py`，其他程序才能从该文件夹引入相应的模块、函数等，之后的版本没有 `__init__.py` 也能正常导入，简单来说就是 Python3.3 之前的版本，`__init__.py` 是包的标识，是必须要有的，之后的版本可以没有。
-
-
-[Python `__all__`](http://c.biancheng.net/view/2401.html)
-
-模块的导入
-```
-import MyPackage.Model1
-from MyPackage import Model1 as M
-```
-在module2.py 中使用module.py中的内容：
-` from . import Module1`
-
-如果在同级目录下存在包Pkg2
-在Module2.py中 `from .Pkg2 import xxx`
-
 
 ## URL 匹配
 固定url匹配使用起来有局限性。Django 可以判断用户输入的url 类型，如数字，字符串。也支持正则表达式。还可以自定义匹配规则函数。
