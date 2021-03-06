@@ -51,6 +51,9 @@ from MyPackage import Model1 as M
 如果在同级目录下存在包Pkg2
 在Module2.py中 `from .Pkg2 import xxx`
 
+## Python Stdand Lib
+看官方文档  
+
 ## yield
 yield与return的区别
 return 一次性返回
