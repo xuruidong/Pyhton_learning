@@ -54,6 +54,146 @@ from MyPackage import Model1 as M
 ## Python Stdand Lib
 看官方文档  
 
+### time
+time.localtime()
+time.strftime('%Y-%m-%d %X', time.localtime())
+time.strptime("2021-03-06 21:57:19", '%Y-%m-%d %X') 转成struct_time
+timedelta 类， 计算时间偏移
+
+### logging
+logging.Baseconfig()
+
+### random
+0-100之间的随机偶数：random.randrange(0, 100, 2)   
+随机选择元素 choice  
+随机抽取多个元素 sample  
+```
+import random
+
+def random_test():
+    print (random.random())
+    print (random.random())
+    
+    print (random.randrange(0, 100, 2))
+    print (random.randrange(0, 100, 2))
+    
+    print (random.choice(["qq", "ww", "ee"]))
+    print (random.choice(["qq", "ww", "ee"]))
+    
+    print (random.sample(["qq", "ww", "ee"], 2))
+    print (random.sample(["qq", "ww", "ee"], 2))
+```
+
+### pathlib
+
+显示当前路径： p.resolve()
+获取文件名： p.name  
+去掉扩展名的文件名 p.stem  
+显示扩展名 p.suffix
+如果有多个扩展名 p.suffixes
+路径 p.parent
+
+```
+import pathlib
+def pathlib_test():
+    p = pathlib.Path()
+    print (p.resolve())
+    
+    testpath = 'C:/Users/Public/basic.py.bak'
+    p = pathlib.Path(testpath)
+    print (p.name)
+    print (p.stem)
+    print (p.suffix)
+    print (p.suffixes)
+    print (p.parent)
+    for pa in p.parents:
+        print (pa)
+    
+    print(p.parts)
+```
+```
+E:\note\python\python-grammar
+basic.py.bak
+basic.py
+.bak
+['.py', '.bak']
+C:\Users\Public
+C:\Users\Public
+C:\Users
+C:\
+('C:\\', 'Users', 'Public', 'basic.py.bak')
+```
+### os.path
+获取绝对路径： os.path.abspath()
+```
+import os
+def ospath_test():
+    print (os.path.abspath('basic.py'))
+    testpath = 'C:/Users/Public/basic.py.bak'
+    print (os.path.basename(testpath))
+    print (os.path.dirname(testpath))
+    print (os.path.exists(testpath))
+    print (os.path.isfile(testpath))
+    print (os.path.isdir(testpath))
+    print (os.path.join('a/b', 'c/d'))
+```
+
+### 正则表达式
+通读官方文档  
+多次使用时，建议将表达式编译成正则表达式对象，然后 match
+re 常量
+
+匹配数量 ".{11}"
+去除匹配成功的内容 group()
+匹配的位数,获得匹配索引的起始和结束 span()
+
+如果要对匹配结果进行分组，用“()”将分组的部分括起来，使用group() + 索引来提取分组内容  
+查找： search 和 findall  
+替换： sub
+替换数字 sub('\d', 'a', '123@1234.com')
+分割字符串 split。如果要保留分割字符， 加括号
+
+```
+import re
+def re_test():
+    content = '13311112222'
+    print(re.match('.{11}', content))
+    print(re.match('.{12}', content))
+    print(re.match('.{7}', content).group())
+    print(re.match('.{7}', content).span())
+    
+    email = '123@456.com'
+    print (re.match('.*@.*com', email))
+    
+    print (re.match('(.*)@(.*)com', email).group(1))
+    print (re.match('(.*)@(.*).com', email).group(2))
+    
+    print (re.search('@', email))
+    print (re.findall('123', '123@1234.com'))
+    
+    print (re.sub('123', 'abc', '123@1234.com'))
+    print (re.sub('\d', 'a', '123@1234.com'))
+    
+    print (re.split('@', email))
+    print (re.split('(@)', email))
+```
+```
+<re.Match object; span=(0, 11), match='13311112222'>
+None
+1331111
+(0, 7)
+<re.Match object; span=(0, 11), match='123@456.com'>
+123
+456
+<re.Match object; span=(3, 4), match='@'>
+['123', '123']
+abc@abc4.com
+aaa@aaaa.com
+['123', '456.com']
+['123', '@', '456.com']
+```
+
+
 ## yield
 yield与return的区别
 return 一次性返回
