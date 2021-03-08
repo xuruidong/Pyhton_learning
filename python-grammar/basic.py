@@ -66,5 +66,7 @@ def re_test():
     print (re.split('@', email))
     print (re.split('(@)', email))
     
+import daemon
+
 if __name__ == "__main__":
     re_test()

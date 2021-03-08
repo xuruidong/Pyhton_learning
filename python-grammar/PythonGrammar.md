@@ -193,6 +193,13 @@ aaa@aaaa.com
 ['123', '@', '456.com']
 ```
 
+### Python Daemon
+PEP 3143 Standard daemon process library
+https://python.org/dev/peps/pep-3143  
+
+sys.stdout.write()
+
+看看 python-daemon 的实现
 
 ## yield
 yield与return的区别
