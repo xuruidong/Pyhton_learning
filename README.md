@@ -2,6 +2,7 @@
 
 [python 杂项](python-0/python-0.md)  
 [python 语法](python-grammar/PythonGrammar.md)  
+[MySQL](2-MySQL/MySQL.md)
 [python爬虫-scrapy](python-1/python-1.md)  
 [python爬虫2-scrapy](python-2/python-2.md)  
 [python 进程与线程](python-3/python-3.md)  
