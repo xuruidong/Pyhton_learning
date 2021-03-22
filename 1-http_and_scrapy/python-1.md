@@ -22,6 +22,14 @@ def requests_test1():
 ```
 不设置headers, 此请求返回418
 
+### requests GET 传参
+以字典形式传参  
+```
+payload = {'k1':'123', 'k2': '222'}
+r = requests.get("http://httpbin.org", params=payload)
+print (r.url)
+```
+
 ### requests与urllib对比
 
 ``` from urllib import request ```
