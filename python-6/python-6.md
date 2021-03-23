@@ -16,25 +16,25 @@
 ### MTV框架
 ![Django](Django11.png)
 
-浏览器发送请求
-Views 视图层接收请求
-Views 视图层调用models
-Models 模型层创建模型
-Models 模型层实行CURD（获取数据）
-Views 视图层调用模板
-Trmplates 
-Views 视图层将数据填充到模板上再响应客户端
+* 浏览器发送请求
+* Views 视图层接收请求
+* Views 视图层调用models
+* Models 模型层创建模型
+* Models 模型层实行CURD（获取数据）
+* Views 视图层调用模板
+* Templates 
+* Views 视图层将数据填充到模板上再响应客户端
 
 ### Django 的特点
-采用了MTV框架
-强调快速开发和代码复用，DRY (Do Not Repeat Youself)
-组件丰富：
-ORM(对象关系映射)映射类来构建数据模型
-URL支持正则表达式
-模板可继承
-内置用户认证，提供用户认证和权限功能
-admin 管理系统
-内置表单模型、Cache缓存系统、国际化系统等
+采用了MTV框架  
+强调快速开发和代码复用，DRY (Do Not Repeat Youself)  
+组件丰富：  
+* ORM(对象关系映射)映射类来构建数据模型
+* URL支持正则表达式
+* 模板可继承
+* 内置用户认证，提供用户认证和权限功能
+* admin 管理系统
+* 内置表单模型、Cache缓存系统、国际化系统等
 
 
 ## Getting Start
@@ -82,7 +82,7 @@ E:\LINUX\NOTE\PYTHON\PYTHON-6\DJANGO_TEST\MYDJANGO\INDEX
 └─migrations
     └─__init__.py
 ```
-此时，该项目已经可以运行，显示Django的欢迎界面。
+此时，该项目已经可以运行，显示Django的欢迎界面。  
 python manage.py runserver
 访问 http://127.0.0.1:8000/ 即可。默认开启DEBUG。
 如果需要修改端口或者服务IP， 加参数：
@@ -109,7 +109,7 @@ $ python manage.py runserver 0.0.0.0:9000
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ```
-debug 模式只能服务一个连接？
+debug 模式只能服务一个连接？  
 debug 模式不能用于生产环境  
 
 ALLOWED_HOSTS = [] 设置域名访问权限  
