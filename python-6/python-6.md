@@ -258,7 +258,7 @@ def re_year(request, year):
 render可以让文件内容进行返回。
 在Templates 文件夹增加 yearview.html
 
-__模板怎么配置？__
+__模板怎么配置？__  
 在settings.py中， TEMPLATES， APP_DIRS 为True， 表示在app路径下查找模板文件，默认模板名称是Templates。
 如果在 INSTALLED_APPS 中注册了应用，并且 TEMPLATES， APP_DIRS 为True, 则可以在app中查找到。
 如果没有在INSTALLED_APPS 中注册应用， 则需要在 TEMPLATES，DIRS 中设置模板路径， 'DIRS': [BASE_DIR+"/index/Templates"]

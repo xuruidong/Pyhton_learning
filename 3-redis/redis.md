@@ -80,4 +80,33 @@ APPEND key value  client.append('key', 'value')
 ### redis set
 
 ### redis sorted set
+zadd  
+zincrby  
+zrangebyscore  
+zrevrank  
 
+
+### redis hash
+使用 hash 要比使用 string 节省内存  
+
+hset  
+hmset  
+hkeys  , hget, hmget, hgetall  
+
+## redis 的重要机制
+如何对redis 进行管理  
+要对redis进行管理，需要了解redis 的机制：
+* redis 的缓存淘汰机制  
+* redis 主从复制机制
+* 哨兵
+
+在缓存中保存的都是热数据，所以在进行保存时，需要设置过期时间，用来节省空间，和保证数据的弱一致性（比如用户登录session, 用户下线后，要定期清除，但定期清除效率比较低，所以采用惰性清除--设置过期时间，LRU） 
+redis 的内存淘汰策略可以设置， LRU, LFU  
+
+主从复制和哨兵都是用来提高redis 可用性的。  
+可以为服务器设置权重  
+
+哨兵可以监控主从服务器是否工作正常。 当服务器出现问题，哨兵模式下的redis 可以通过API向管理员或者其他应用程序发起通知
+为什么要引入哨兵？  
+
+哨兵一般不会是1个， 
