@@ -110,3 +110,17 @@ redis 的内存淘汰策略可以设置， LRU, LFU
 为什么要引入哨兵？  
 
 哨兵一般不会是1个， 
+
+
+# MQ
+## RabbitMQ 安装
+yum install - y rabbitmq-server  
+rabbitmq-plugins enable rabbitmq_management  
+
+systemctl start rabbitmq-server
+
+rabbitmq 使用5672端口  ， 访问 15672 端口，进入web 管理界面，默认的用户名和密码为 guest, 
+
+
+## python 操作 RabbitMQ
+安装pika  
