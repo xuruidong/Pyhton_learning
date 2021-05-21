@@ -14,6 +14,7 @@ def class_test():
     print("Human.__dict__: %s" % Human.__dict__)
     print("*" * 20)
 
+    print("h1.live11=%s" % h1.live11)
     print("h1.live=%s" % h1.live)
     print("h1.__dict__: %s" % h1.__dict__)
     h1.live = False
@@ -402,7 +403,7 @@ def mixin_test2():
     print(MySubClass.mro())
     
 if __name__ == "__main__":
-    # class_test()
+    class_test()
     # class_method_test()
     # getattribute_test()
     # property_test()
@@ -413,6 +414,6 @@ if __name__ == "__main__":
     # meta_test()
     # mor_test()
     # type_test()
-    mixin_test2()
+    # mixin_test2()
     
     print("===== end =====")
