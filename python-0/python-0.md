@@ -79,3 +79,7 @@ github 搜索， in:readme  xxx
 * 从整体分析一个比较复杂的大问题
 * 分析方法可以重用
 * 拆分到能解决的范畴
+
+
+[将C代码封装成python可以import调用的so](https://zhuanlan.zhihu.com/p/438203378)  
+[python调用c++利器--pybind11](https://zhuanlan.zhihu.com/p/215790047)  
