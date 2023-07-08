@@ -1,7 +1,7 @@
 # Python-7 类
 
-[Classes](https://docs.python.org/3/tutorial/classes.html)
-[菜鸟教程](https://www.runoob.com/python/python-object.html)
+[Classes](https://docs.python.org/3/tutorial/classes.html)  
+[菜鸟教程](https://www.runoob.com/python/python-object.html)  
 类(Class): 用来描述具有相同的属性和方法的对象的集合。它定义了该集合中每个对象所共有的属性和方法。对象是类的实例。
 Python 中，一切皆对象, 比如数字，list, 元组等等。  
 Python 2.2 之前称之为经典类，之后称之为新式类。新式类继承自object类。
@@ -88,8 +88,8 @@ d.__class__()
 `builtins.TypeError: can't set attributes of built-in/extension type 'list'`
 
 ### 属性的作用域
-* 形如_attr 的变量，叫人为不可修改变量，变量可见，但约定不去修改。
-* 形如__attr的属性, 是私有属性，Python 会对其自动改名，方式其他人对其修改。但也是可以访问的，但不建议访问。
+* 形如_attr 的变量，叫做“人为不可修改变量”，变量可见，但约定不去修改。
+* 形如__attr的属性, 是私有属性，Python 会对其自动改名，防止其他人对其修改。但也是可以访问的，但不建议访问。
 * 形如__attr__的属性, 是魔术方法，不会被自动改名。
 
 ### 显示object类所有子类  
